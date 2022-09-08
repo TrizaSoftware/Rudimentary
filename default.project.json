@@ -1,0 +1,12 @@
+{
+    "name": "Rudimentary",
+    "tree": {
+      "$className": "DataModel",
+      "ServerScriptService": {
+        "$className": "ServerScriptService",
+        "MainModule": {
+          "$path": "MainModule"
+        }
+      }
+    }
+  }
