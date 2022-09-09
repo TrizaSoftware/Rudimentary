@@ -1,4 +1,4 @@
-name: publish
+name: publish_main
 
 on:
   push:
