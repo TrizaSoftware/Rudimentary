@@ -132,7 +132,7 @@ local function checkHTTPService()
 end
 
 local mainTable = {
-	Version = "0.9.2",
+	Version = "0.9.2-releasecandidate1",
 	VersionName = "Tired Tiger",
 	ChangeLogs = [[
 	Added Music Command
