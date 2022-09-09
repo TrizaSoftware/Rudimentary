@@ -3,7 +3,7 @@ Command.Name = "unnoclip"
 Command.Description = "Clips the specified user(s)."
 Command.Aliases = {"clip"}
 Command.Prefix = "MainPrefix"
-Command.RequiredAdminLevel = 1
+Command.RequiredAdminLevel = 2
 Command.Schema = {{["Name"] = "User(s)", ["Type"] = "String"}}
 Command.ArgsToReplace = {2}
 Command.Handler = function(env : table, plr : Player, args : table)

@@ -4,7 +4,7 @@ Command.Description = "Noclip flies the specified user(s)."
 Command.Aliases = {"ncf"}
 Command.Prefix = "MainPrefix"
 Command.Schema = {{["Name"] = "Player", ["Type"] = "String"}}
-Command.RequiredAdminLevel = 1
+Command.RequiredAdminLevel = 2
 Command.ArgsToReplace = {1}
 Command.Handler = function(env, plr, args)
 	if not args[1] then
