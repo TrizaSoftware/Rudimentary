@@ -1,4 +1,4 @@
-name: publish
+name: publish_main
 
 on:
   push:
@@ -14,3 +14,5 @@ jobs:
       - uses: Roblox/setup-foreman@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Rojo Test
+        run: rojo help
