@@ -15,4 +15,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Rojo Test
-        run: rojo
+        run: rojo help
