@@ -1,0 +1,16 @@
+name: publish
+
+on:
+  push:
+    branches: [main]
+
+jobs: 
+  publish: 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+        with:
+          ref: main
+      - uses: Roblox/setup-foreman@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
