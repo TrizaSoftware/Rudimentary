@@ -1,0 +1,18 @@
+name: publish_canary
+
+on:
+  push:
+    branches: [canary]
+
+jobs: 
+  publish: 
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+        with:
+          ref: canary
+      - uses: Roblox/setup-foreman@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build
+        run: rojo help

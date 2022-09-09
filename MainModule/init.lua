@@ -48,7 +48,9 @@ local Settings = {
 	["DisableCommandTargetNotifications"] = false,
 	["DisabledCommandTypes"] = {},
 	["ToolStorage"] = ServerStorage,
-	["CommandLevels"] = {}
+	["CommandLevels"] = {},
+	["RudimentaryPlus"] = false,
+	["RudimentaryPlusKey"] = ""
 }
 
 local ValidSettings = {
@@ -74,7 +76,9 @@ local ValidSettings = {
 	"Theme",
 	"ToolStorage",
 	"DisabledCommandTypes",
-	"DisableCommandTargetNotifications"
+	"DisableCommandTargetNotifications",
+	"RudimentaryPlus",
+	"RudimentaryPlusKey"
 }
 
 local ValidSettingsExceptions = {
@@ -99,7 +103,9 @@ local NonEditableSettings = {
 	"DataStoreName",
 	"ToolStorage",
 	"DisabledCommandTypes",
-	"CommandLevels"
+	"CommandLevels",
+	"RudimentaryPlus",
+	"RudimentaryPlusKey"
 }
 
 local BlacklistedSettingsTerms = {
