@@ -1,11 +1,37 @@
 local Players = game:GetService("Players")
 local Chat = game:GetService("Chat")
+local validIndentifiers = {
+  "d",
+  "h",
+  "m"
+}
+
+local function parseString(str)
+	local chars = str:split("")
+	local parsedData = {}
+	for i, char in chars do     
+	 if table.find(validIndentifiers, char) then
+					local numparts = ""
+					for num = i-1,1,-1 do
+							if tonumber(chars[num]) ~= nil then
+									numparts = string.format("%s%s", numparts, chars[num])
+							else
+									break
+							end
+					end
+					numparts = numparts:reverse()
+					parsedData[char] = if parsedData[char] then tonumber(numparts) + parsedData[char] else tonumber(numparts)
+			end 
+	end
+	return parsedData
+ end
+
 local Command = {}
 Command.Name = "timeban"
 Command.Description = "Bans a user from the game for a specified amount of time."
 Command.Aliases = {"tban"}
 Command.Prefix = "MainPrefix"
-Command.Schema = {{["Name"] = "User(s)", ["Type"] = "String"}, {["Name"] = "Time (mins)", ["Type"] = "String"}, {["Name"] = "Reason", ["Type"] = "String"}}
+Command.Schema = {{["Name"] = "User(s)", ["Type"] = "String"}, {["Name"] = "Time", ["Type"] = "String"}, {["Name"] = "Reason", ["Type"] = "String"}}
 Command.RequiredAdminLevel = 2
 Command.ArgsToReplace = {1}
 
@@ -21,8 +47,18 @@ Command.Handler = function(env, plr, args)
 		return
 	end
 	local Target = args[1]
-  local Mins = tonumber(args[2])
-  local UnbanTime = os.time() + (Mins*60)
+	local ParsedTimeData = parseString(args[2])
+	local Seconds = 0
+	for timetype, num in ParsedTimeData do
+		if timetype == "d" then
+				Seconds += num * 86400
+		elseif timetype == "h" then
+				Seconds += num * 3600
+		elseif timetype == "m" then
+				Seconds += num * 60
+		end
+	end
+  local UnbanTime = os.time() + Seconds
 	local BanReason = "You've been time banned."
 	local nt = {}
 	if #args >= 3 then
@@ -32,7 +68,7 @@ Command.Handler = function(env, plr, args)
 	end
 	BanReason = string.format("%s\nReason: %s",BanReason,if #args >= 2 then table.concat(nt," ") else "No reason provided.")
 	BanReason = string.format("%s\nModerator:\n%s",Chat:FilterStringForBroadcast(BanReason, plr),plr.Name)
-  BanReason = string.format("%s\nExpires:%s", os.date("%A, %b %w @ %H:%M (UTC)", UnbanTime))
+  BanReason = string.format("\nExpires:\n%s", os.date("%A, %b %w @ %H:%M (UTC)", UnbanTime))
 	if not Target[1] then
 		env.RemoteEvent:FireClient(plr,"showHint", {Title = "Error", Text = "You must specify at least one user to ban."})
 		env.RemoteEvent:FireClient(plr, "playSound", "Error")
