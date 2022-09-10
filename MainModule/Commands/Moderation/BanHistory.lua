@@ -28,6 +28,9 @@ Command.Handler = function(env, plr, args)
 			end
 		end
 		local BanHistory = env.DataStore:GetAsync(string.format("BanHistory_%s", UserId)) or {}
+		for i, data in BanHistory do
+			BanHistory[i] = {Data = data, Clickable = true}
+		end
 		env.RemoteEvent:FireClient(plr, "makeList", {
 			Title = string.format("%s's Ban History", Players:GetNameFromUserIdAsync(tonumber(UserId))), 
 			Items = BanHistory, 

@@ -132,14 +132,20 @@ local function checkHTTPService()
 end
 
 local mainTable = {
-	Version = "0.9.2-releasecandidate1",
+	Version = "0.9.2",
 	VersionName = "Tired Tiger",
 	ChangeLogs = [[
-	Added Music Command
-	Added Place Command
-	Fixed a bug with the Admin & Unadmin Command
-	Fixed a bug with the Private Message Command
-	Fixed a bug where lists would take a long time to load large amounts of content
+	Added R6 Command
+	Added Noclip Command
+	Added Clip Command
+	Added Timeban Command
+	Added ClientLogs Command
+	Added Clickable List Elements
+	Added Freecam Command
+	Added a Tab Autocomplete for commands in the CommandBar
+	Fixed a bug where admins wouldn't save
+	Made the countdown automatically close after 3 seconds of the countdown being over
+	Removed auto refresh for Logs & ChatLogs
 	]],
 	HttpService = checkHTTPService(),
 	ServerRegion = "",
@@ -576,13 +582,13 @@ local function executeCommand(plr, str)
 						table.insert(newarg, Plrs[math.random(1,#Plrs)])
 					elseif argval:lower() == "admins" then
 						for _, plr in Players:GetPlayers() do
-							if mainTable.Admins[plr.UserId] > 0 then
+							if (mainTable.Admins[plr.UserId] or 0) > 0 then
 								table.insert(newarg, plr)
 							end
 						end
 					elseif argval:lower() == "nonadmins" then
 						for _, plr in Players:GetPlayers() do
-							if mainTable.Admins[plr.UserId] <= 0 then
+							if (mainTable.Admins[plr.UserId] or 0) <= 0 then
 								table.insert(newarg, plr)
 							end
 						end
