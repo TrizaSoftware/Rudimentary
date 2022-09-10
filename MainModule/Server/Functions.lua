@@ -92,6 +92,9 @@ return {
 		if env.Admins[plr.UserId] >= env.Commands.banhistory.RequiredAdminLevel then
 			local Key = string.format("BanHistory_%s", userid)
 			local BanHistory = env.DataStore:GetAsync(Key) or {}
+			for i, data in BanHistory do
+				BanHistory[i] = {Data = data, Clickable = true}
+			end
 			return BanHistory
 		else
 			return {}
