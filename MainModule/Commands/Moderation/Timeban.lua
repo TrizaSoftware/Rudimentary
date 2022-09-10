@@ -10,19 +10,19 @@ local function parseString(str)
 	local chars = str:split("")
 	local parsedData = {}
 	for i, char in chars do     
-	 if table.find(validIndentifiers, char) then
-					local numparts = ""
-					for num = i-1,1,-1 do
-							if tonumber(chars[num]) ~= nil then
-									numparts = string.format("%s%s", numparts, chars[num])
-							else
-									break
-							end
-					end
-					numparts = numparts:reverse()
-					parsedData[char] = if parsedData[char] then tonumber(numparts) + parsedData[char] else tonumber(numparts)
-			end 
-	end
+		if table.find(validIndentifiers, char) then
+					 local numparts = ""
+					 for num = i-1,1,-1 do
+							 if tonumber(chars[num]) ~= nil then
+									 numparts = string.format("%s%s", numparts, chars[num])
+							 else
+									 break
+							 end
+					 end
+					 numparts = numparts:reverse()
+					 parsedData[char] = if parsedData[char] then tonumber(numparts) + parsedData[char] else tonumber(numparts)
+			 end 
+	 end
 	return parsedData
  end
 
@@ -59,6 +59,7 @@ Command.Handler = function(env, plr, args)
 		end
 	end
   local UnbanTime = os.time() + Seconds
+	print(UnbanTime)
 	local BanReason = "You've been time banned."
 	local nt = {}
 	if #args >= 3 then
@@ -79,6 +80,7 @@ Command.Handler = function(env, plr, args)
 				return
 			end
 		end
+		local TimeBans = env.DataStore:GetAsync("TimeBans")
 		for _, tgt in Target do
 			local UserId = nil
 			if typeof(tgt) == "Instance" then
@@ -95,19 +97,32 @@ Command.Handler = function(env, plr, args)
 					return
 				end
 			end
+			local TimeBanned = false
+			for _, bd in TimeBans do
+				if bd.UserId == UserId then
+					TimeBanned = true
+				end
+			end
+			if TimeBanned then
+				env.RemoteEvent:FireClient(plr,"showHint", {Title = "Error", Text = string.format("%s is already time banned.", Players:GetNameFromUserIdAsync(UserId))})
+				env.RemoteEvent:FireClient(plr, "playSound", "Error")
+				continue
+			end
 			if UserId == plr.UserId then
 				env.RemoteEvent:FireClient(plr,"showHint", {Title = "Error", Text = "You can't server ban yourself."})
 				env.RemoteEvent:FireClient(plr, "playSound", "Error")
 				continue
 			end
 			if (env.Admins[UserId] or 0) < env.API.getAdminLevel(plr) then
-				env.RemoteEvent:FireClient(plr,"showHint", {Title = "Success", Text = string.format("Successfully server banned %s.", Players:GetNameFromUserIdAsync(UserId))})
+				env.RemoteEvent:FireClient(plr,"showHint", {Title = "Success", Text = string.format("Successfully time banned %s.", Players:GetNameFromUserIdAsync(UserId))})
 				env.RemoteEvent:FireClient(plr, "playSound", "Success")
 				local tgtplr = Players:GetPlayerByUserId(tonumber(UserId))
 				if tgtplr then
 					env.API.removePlayerFromServer(tgtplr, BanReason)
 				end
-				env.API.addUserToBans(UserId, {Type = "Time", Reason = BanReason, UnbanTime = UnbanTime})
+				table.insert(TimeBans, {UserId = UserId, Reason = BanReason, UnbanTime = UnbanTime})
+				env.DataStore:SetAsync("TimeBans", TimeBans)
+				env.API.CSM.dispatchMessageToServers({request = "addTimeBan", userId = UserId, reason = BanReason, unbanTime = UnbanTime})
 				env.API.addToBanHistory(UserId, 
 					string.format("[{time:%s:sdi}] Time Banned at {time:%s:ampm} by %s for reason %s", 
 						os.time(),

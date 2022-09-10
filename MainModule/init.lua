@@ -769,7 +769,22 @@ local function handlePlayer(player)
 		local Ban = nil
 		for _, banData in mainTable.Bans do
 			if banData.UserId == player.UserId then
-				Ban = banData
+				if banData.Type == "Time" then
+					if os.time() >= banData.UnbanTime then
+						APIFunctions.CSM.dispatchMessageToServers({request = "removeTimeBan", userId = player.UserId})
+						local TimeBans = mainTable.DataStore:GetAsync("TimeBans")
+						for i, bd in TimeBans do
+							if bd.UserId == player.UserId then
+								table.remove(TimeBans, i)
+							end
+						end
+						mainTable.DataStore:SetAsync("TimeBans", TimeBans)
+					else
+						Ban = banData
+					end
+				else
+					Ban = banData
+				end
 			end
 		end
 		if Ban then
@@ -914,6 +929,10 @@ local function setupAdmin(Config, Requirer)
 	if not mainTable.DataStore:GetAsync("PermanentBans") then
 		mainTable.DataStore:SetAsync("PermanentBans", {})
 	end
+
+	if not mainTable.DataStore:GetAsync("TimeBans") then
+		mainTable.DataStore:SetAsync("TimeBans", {})
+	end
 	
 	task.spawn(function()
 		task.wait(0.4)
@@ -923,6 +942,10 @@ local function setupAdmin(Config, Requirer)
 		
 		for _, bandata in mainTable.DataStore:GetAsync("PermanentBans") do
 			 table.insert(mainTable.Bans, {Type = "Perm", Reason = bandata.Reason, UserId = tonumber(bandata.UserId)})
+		end
+
+		for _, bandata in mainTable.DataStore:GetAsync("TimeBans") do
+			table.insert(mainTable.Bans, {Type = "Time", Reason = bandata.Reason, UserId = tonumber(bandata.UserId), UnbanTime = tonumber(bandata.UnbanTime)})
 		end
 	end)
 	
@@ -1119,6 +1142,10 @@ local function setupAdmin(Config, Requirer)
 				APIFunctions.addUserToBans(Data.userId, {Type = "Perm", Reason = Data.reason})
 			elseif Data.request == "removePermanentBan" then
 				APIFunctions.removeBan(Data.userId, "Perm")
+			elseif Data.request == "addTimeBan" then
+				APIFunctions.addUserToBans(Data.userId, {Type = "Time", Reason = Data.reason, UnbanTime = Data.unbanTime})
+			elseif Data.request == "removeTimeBan" then
+				APIFunctions.removeBan(Data.userId, "Time")
 			end
 		end)
 	end)
