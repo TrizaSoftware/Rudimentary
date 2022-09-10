@@ -58,9 +58,7 @@ Command.Handler = function(env, plr, args)
 				Seconds += num * 60
 		end
 	end
-	print(Seconds)
   local UnbanTime = os.time() + Seconds
-	print(UnbanTime)
 	local BanReason = "You've been time banned."
 	local nt = {}
 	if #args >= 3 then
