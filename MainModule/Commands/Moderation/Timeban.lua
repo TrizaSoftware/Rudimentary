@@ -69,7 +69,7 @@ Command.Handler = function(env, plr, args)
 	end
 	BanReason = string.format("%s\nReason: %s",BanReason,if #args >= 2 then table.concat(nt," ") else "No reason provided.")
 	BanReason = string.format("%s\nModerator:\n%s",Chat:FilterStringForBroadcast(BanReason, plr),plr.Name)
-  BanReason = string.format("\nExpires:\n%s", os.date("%A, %b %w @ %H:%M (UTC)", UnbanTime))
+  BanReason = string.format("\nExpires:\n%s", os.date("%A, %b %w, %Y @ %H:%M (UTC)", UnbanTime))
 	if not Target[1] then
 		env.RemoteEvent:FireClient(plr,"showHint", {Title = "Error", Text = "You must specify at least one user to ban."})
 		env.RemoteEvent:FireClient(plr, "playSound", "Error")
@@ -124,11 +124,12 @@ Command.Handler = function(env, plr, args)
 				env.DataStore:SetAsync("TimeBans", TimeBans)
 				env.API.CSM.dispatchMessageToServers({request = "addTimeBan", userId = UserId, reason = BanReason, unbanTime = UnbanTime})
 				env.API.addToBanHistory(UserId, 
-					string.format("[{time:%s:sdi}] Time Banned at {time:%s:ampm} by %s for reason %s", 
+					string.format("[{time:%s:sdi}] Time Banned at {time:%s:ampm} by %s for reason %s until %s", 
 						os.time(),
 						os.time(),
 						plr.Name,
-						if #args >= 2 then table.concat(nt," ") else "No reason provided."
+						if #args >= 2 then table.concat(nt," ") else "No reason provided.",
+						os.date("%A, %b %w, %Y @ %H:%M (UTC)", UnbanTime)
 					)
 				)
 			else
