@@ -11,17 +11,17 @@ local function parseString(str)
 	local parsedData = {}
 	for i, char in chars do     
 		if table.find(validIndentifiers, char) then
-					 local numparts = ""
-					 for num = i-1,1,-1 do
-							 if tonumber(chars[num]) ~= nil then
-									 numparts = string.format("%s%s", numparts, chars[num])
-							 else
-									 break
-							 end
-					 end
-					 numparts = numparts:reverse()
-					 parsedData[char] = if parsedData[char] then tonumber(numparts) + parsedData[char] else tonumber(numparts)
-			 end 
+			 local numparts = ""
+			 for num = i-1,1,-1 do
+				  if tonumber(chars[num]) ~= nil then
+					numparts = string.format("%s%s", numparts, chars[num])
+				 else
+					 break
+				end
+			 end
+			 numparts = numparts:reverse()
+			 parsedData[char] = if parsedData[char] then tonumber(numparts) + parsedData[char] else tonumber(numparts)
+		  end 
 	 end
 	return parsedData
  end
