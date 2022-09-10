@@ -9,7 +9,7 @@ local validIndentifiers = {
 local function parseString(str)
 	local chars = str:split("")
 	local parsedData = {}
-	for i, char in chars do     
+	for i, char in chars do
 		if table.find(validIndentifiers, char) then
 			 local numparts = ""
 			 for num = i-1,1,-1 do
@@ -21,7 +21,7 @@ local function parseString(str)
 			 end
 			 numparts = numparts:reverse()
 			 parsedData[char] = if parsedData[char] then tonumber(numparts) + parsedData[char] else tonumber(numparts)
-		  end 
+		  end
 	 end
 	return parsedData
  end
@@ -58,6 +58,7 @@ Command.Handler = function(env, plr, args)
 				Seconds += num * 60
 		end
 	end
+	print(Seconds)
   local UnbanTime = os.time() + Seconds
 	print(UnbanTime)
 	local BanReason = "You've been time banned."
@@ -69,7 +70,7 @@ Command.Handler = function(env, plr, args)
 	end
 	BanReason = string.format("%s\nReason: %s",BanReason,if #args >= 2 then table.concat(nt," ") else "No reason provided.")
 	BanReason = string.format("%s\nModerator:\n%s",Chat:FilterStringForBroadcast(BanReason, plr),plr.Name)
-  BanReason = string.format("\nExpires:\n%s", os.date("%A, %b %w, %Y @ %H:%M (UTC)", UnbanTime))
+  BanReason = string.format("\nExpires:\n%s", os.date("%A, %b %d, %Y @ %H:%M (UTC)", UnbanTime))
 	if not Target[1] then
 		env.RemoteEvent:FireClient(plr,"showHint", {Title = "Error", Text = "You must specify at least one user to ban."})
 		env.RemoteEvent:FireClient(plr, "playSound", "Error")
@@ -123,18 +124,18 @@ Command.Handler = function(env, plr, args)
 				table.insert(TimeBans, {UserId = UserId, Reason = BanReason, UnbanTime = UnbanTime})
 				env.DataStore:SetAsync("TimeBans", TimeBans)
 				env.API.CSM.dispatchMessageToServers({request = "addTimeBan", userId = UserId, reason = BanReason, unbanTime = UnbanTime})
-				env.API.addToBanHistory(UserId, 
-					string.format("[{time:%s:sdi}] Time Banned at {time:%s:ampm} by %s for reason %s until %s", 
+				env.API.addToBanHistory(UserId,
+					string.format("[{time:%s:sdi}] Time Banned at {time:%s:ampm} by %s for reason %s until %s",
 						os.time(),
 						os.time(),
 						plr.Name,
-						if #args >= 2 then table.concat(nt," ") else "No reason provided.",
-						os.date("%A, %b %w, %Y @ %H:%M (UTC)", UnbanTime)
+						if #args >= 3 then table.concat(nt," ") else "No reason provided.",
+						os.date("%A, %b %d, %Y @ %H:%M (UTC)", UnbanTime)
 					)
 				)
 			else
 				env.RemoteEvent:FireClient(plr,"showHint", {
-					Title = "Permissions Error", 
+					Title = "Permissions Error",
 					Text = string.format("%s has a higher admin level or the same as you.", Players:GetNameFromUserIdAsync(UserId))
 				})
 				env.RemoteEvent:FireClient(plr, "playSound", "Error")
