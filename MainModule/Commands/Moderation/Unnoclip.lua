@@ -5,7 +5,7 @@ Command.Aliases = {"clip"}
 Command.Prefix = "MainPrefix"
 Command.RequiredAdminLevel = 2
 Command.Schema = {{["Name"] = "User(s)", ["Type"] = "String"}}
-Command.ArgsToReplace = {2}
+Command.ArgsToReplace = {1}
 Command.Handler = function(env : table, plr : Player, args : table)
     if not args[1] then
         env.API.RemoteEvent:FireClient(plr, "showHint", {Title = "Error", Text = "You can't clip no one."})
