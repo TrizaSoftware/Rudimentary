@@ -135,17 +135,18 @@ local mainTable = {
 	Version = "0.9.2.1",
 	VersionName = "Tired Tiger",
 	ChangeLogs = [[
-	Added R6 Command
-	Added Noclip Command
-	Added Clip Command
-	Added Timeban Command
-	Added ClientLogs Command
-	Added Clickable List Elements
-	Added Freecam Command
-	Added a Tab Autocomplete for commands in the CommandBar
-	Fixed a bug where admins wouldn't save
-	Made the countdown automatically close after 3 seconds of the countdown being over
-	Removed auto refresh for Logs & ChatLogs
+		Additions
+
+		Added Freeze Command
+		Added Thaw Command
+		Added Kill Command
+		
+		Fixes
+		
+		Fixed a bug where tracking wouldn't work if a user wasn't on a team
+		Fixed a bug where kicking someone would always return the executing user's name instead of the targeted user's if a permissions failure occurred
+		Fixed a bug where the NoClip script was being fetched from the wrong location
+		Fixed the permission level for the "Place" command
 	]],
 	HttpService = checkHTTPService(),
 	ServerRegion = "",
