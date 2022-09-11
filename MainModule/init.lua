@@ -132,7 +132,7 @@ local function checkHTTPService()
 end
 
 local mainTable = {
-	Version = "0.9.2",
+	Version = "0.9.2.1",
 	VersionName = "Tired Tiger",
 	ChangeLogs = [[
 	Added R6 Command
@@ -431,6 +431,11 @@ local function makeSettingsData()
 end
 
 local function checkValidKey(plr, key)
+	if not mainTable.Keys[plr.UserId] then
+		repeat
+			task.wait()
+		until mainTable.Keys[plr.UserId]
+	end
 	return if table.find(mainTable.Keys[plr.UserId], key) then true else false
 end
 
@@ -761,10 +766,13 @@ local function handlePlayer(player)
 		local Start = tick()
 		local maxtime = if game:GetService("RunService"):IsStudio() then 3 else 200
 		repeat task.wait() until StartedClients[player] or (tick() - Start) > maxtime
-		if not player.PlayerGui:FindFirstChild("RudimentaryUi") then
-			local Clone = script.RudimentaryUi:Clone()
-			Clone.Parent = player.PlayerGui
-		end
+		task.spawn(function()
+			task.wait(1)
+			if not player.PlayerGui:FindFirstChild("RudimentaryUi") then
+				local Clone = script.RudimentaryUi:Clone()
+				Clone.Parent = player.PlayerGui
+			end
+		end)
 		if (tick() - Start) <= maxtime then
 			warn(string.format("%s's Client Started In %s Second(s)", player.Name, tick() - Start))
 		else

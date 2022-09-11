@@ -335,7 +335,7 @@ return {
 		Beam.Width1 = 0.3
 		Beam.Attachment0 = Attach0
 		Beam.Attachment1 = Attach1
-		Beam.Color = ColorSequence.new(plr.Team.TeamColor.Color)
+		Beam.Color = ColorSequence.new(Color)
 		Beam.Parent = plr.Character
 		local Highlight = Instance.new("Highlight")
 		Highlight.Name = "RudimentaryTrackHighlight"
@@ -345,9 +345,10 @@ return {
 		Highlight.OutlineColor = Color
 		Highlight.Parent = plr.Character
 		local UpdateColor = plr:GetPropertyChangedSignal("Team"):Connect(function()
-			Beam.Color = ColorSequence.new(plr.Team.TeamColor.Color)
-			Highlight.FillColor = plr.Team.TeamColor.Color
-			Highlight.OutlineColor = plr.Team.TeamColor.Color
+			Color = if plr.Team then plr.Team.TeamColor.Color else Color3.fromRGB(255,255,255)
+			Beam.Color = ColorSequence.new(Color)
+			Highlight.FillColor = Color
+			Highlight.OutlineColor = Color
 		end)
 		local ClientCharAddedConnection = Player.CharacterAdded:Connect(function(char)
 			char:WaitForChild("HumanoidRootPart")
@@ -355,6 +356,7 @@ return {
 		end)
 		local TargetCharAddedConnection = plr.CharacterAdded:Connect(function(char)
 			char:WaitForChild("HumanoidRootPart")
+			char:WaitForChild("Head")
 			TrackOverhead.Parent = char
 			TrackOverhead.Adornee = char.Head
 			Attach1.Parent = char.HumanoidRootPart

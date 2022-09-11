@@ -20,7 +20,7 @@ Command.Handler = function(env : table, plr : Player, args : table)
                 env.RemoteEvent:FireClient(plr, "playSound", "Error")
                 continue
             end
-            local Clone = env.Shared.NoClip:Clone()
+            local Clone = env.Assets.NoClip:Clone()
             Clone.Parent = target.Character
             Clone.Name = "RudimentaryNoClipHandler"
             Clone.Disabled = false
