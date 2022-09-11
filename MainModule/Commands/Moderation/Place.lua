@@ -4,7 +4,7 @@ Command.Name = "place"
 Command.Description = "Sends the user(s) to the specified place."
 Command.Aliases = {"tptoplace"}
 Command.Prefix = "MainPrefix"
-Command.RequiredAdminLevel = 1
+Command.RequiredAdminLevel = 2
 Command.Schema = {{["Name"] = "User(s)", ["Type"] = "String"}, {["Name"] = "Place Id", ["Type"] = "Number"}}
 Command.ArgsToReplace = {1}
 Command.Handler = function(env, plr, args)

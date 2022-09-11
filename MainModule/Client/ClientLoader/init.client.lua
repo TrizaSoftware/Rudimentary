@@ -610,7 +610,10 @@ local function makeNotification(NotiData)
 						makePrivateMessage(InstanceData)
 					end
 				elseif NotiData.ExtraData.ClientFunctionToRun then
-					pcall(ClientFunctions[NotiData.ExtraData.ClientFunctionToRun], Client)
+					local suc, result = pcall(ClientFunctions[NotiData.ExtraData.ClientFunctionToRun], Client)
+					if not suc then
+						warn(string.format("Client Function Failure: %s", result))
+					end
 				end
 			end
 			NotiFader:fadeOut(1)

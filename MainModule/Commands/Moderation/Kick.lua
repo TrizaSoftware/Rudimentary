@@ -68,7 +68,7 @@ Command.Handler = function(env, plr, args)
 				if env.API.getAdminLevel(tgt) < env.API.getAdminLevel(plr) then
 					env.API.removePlayerFromServer(tgt, KickReason)
 				else
-					env.RemoteEvent:FireClient(plr,"showHint", {Title = "Permissions Error", Text = string.format("%s has a higher admin level or the same as you", plr.Name)})
+					env.RemoteEvent:FireClient(plr,"showHint", {Title = "Permissions Error", Text = string.format("%s has a higher admin level or the same as you", tgt.Name)})
 					env.RemoteEvent:FireClient(plr, "playSound", "Error")
 				end
 			end
