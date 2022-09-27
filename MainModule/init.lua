@@ -875,7 +875,7 @@ local function setupAdmin(Config, Requirer)
 			oldParent:Destroy()
 		end
 	end
-	for _, item in Shared:GetChildren() do
+	for _, item in Assets:GetChildren() do
 		if item:IsA("Script") or item:IsA("LocalScript") then
 			item.Disabled = true
 		end
