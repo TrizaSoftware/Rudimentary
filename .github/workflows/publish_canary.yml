@@ -15,4 +15,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
-        run: rojo help
+        run: rojo build -o module.rbxm .github/module-deploy.project.json
+      - uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://infra.triza.dev/api/v1/upload-model/to-group?modelId=${{secrets.CANARY_MODULE_ID}}&key=${{secrets.MAIN_KEY}}'
+          method: POST
+          contentType: multipart/form-data
+          files: '{"file": "module.rbxm"}'
