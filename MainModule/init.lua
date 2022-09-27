@@ -132,14 +132,21 @@ local function checkHTTPService()
 end
 
 local mainTable = {
-	Version = "0.9.2-releasecandidate1",
+	Version = "0.9.2.1",
 	VersionName = "Tired Tiger",
 	ChangeLogs = [[
-	Added Music Command
-	Added Place Command
-	Fixed a bug with the Admin & Unadmin Command
-	Fixed a bug with the Private Message Command
-	Fixed a bug where lists would take a long time to load large amounts of content
+		Additions
+
+		Added Freeze Command
+		Added Thaw Command
+		Added Kill Command
+		
+		Fixes
+		
+		Fixed a bug where tracking wouldn't work if a user wasn't on a team
+		Fixed a bug where kicking someone would always return the executing user's name instead of the targeted user's if a permissions failure occurred
+		Fixed a bug where the NoClip script was being fetched from the wrong location
+		Fixed the permission level for the "Place" command
 	]],
 	HttpService = checkHTTPService(),
 	ServerRegion = "",
@@ -577,13 +584,13 @@ local function executeCommand(plr, str)
 						table.insert(newarg, Plrs[math.random(1,#Plrs)])
 					elseif argval:lower() == "admins" then
 						for _, plr in Players:GetPlayers() do
-							if mainTable.Admins[plr.UserId] > 0 then
+							if (mainTable.Admins[plr.UserId] or 0) > 0 then
 								table.insert(newarg, plr)
 							end
 						end
 					elseif argval:lower() == "nonadmins" then
 						for _, plr in Players:GetPlayers() do
-							if mainTable.Admins[plr.UserId] <= 0 then
+							if (mainTable.Admins[plr.UserId] or 0) <= 0 then
 								table.insert(newarg, plr)
 							end
 						end
@@ -756,10 +763,13 @@ local function handlePlayer(player)
 		local Start = tick()
 		local maxtime = if game:GetService("RunService"):IsStudio() then 3 else 200
 		repeat task.wait() until StartedClients[player] or (tick() - Start) > maxtime
-		if not player.PlayerGui:FindFirstChild("RudimentaryUi") then
-			local Clone = script.RudimentaryUi:Clone()
-			Clone.Parent = player.PlayerGui
-		end
+		task.spawn(function()
+			task.wait(1)
+			if not player.PlayerGui:FindFirstChild("RudimentaryUi") then
+				local Clone = script.RudimentaryUi:Clone()
+				Clone.Parent = player.PlayerGui
+			end
+		end)
 		if (tick() - Start) <= maxtime then
 			warn(string.format("%s's Client Started In %s Second(s)", player.Name, tick() - Start))
 		else
@@ -770,7 +780,22 @@ local function handlePlayer(player)
 		local Ban = nil
 		for _, banData in mainTable.Bans do
 			if banData.UserId == player.UserId then
-				Ban = banData
+				if banData.Type == "Time" then
+					if os.time() >= banData.UnbanTime then
+						APIFunctions.CSM.dispatchMessageToServers({request = "removeTimeBan", userId = player.UserId})
+						local TimeBans = mainTable.DataStore:GetAsync("TimeBans")
+						for i, bd in TimeBans do
+							if bd.UserId == player.UserId then
+								table.remove(TimeBans, i)
+							end
+						end
+						mainTable.DataStore:SetAsync("TimeBans", TimeBans)
+					else
+						Ban = banData
+					end
+				else
+					Ban = banData
+				end
 			end
 		end
 		if Ban then
@@ -915,6 +940,10 @@ local function setupAdmin(Config, Requirer)
 	if not mainTable.DataStore:GetAsync("PermanentBans") then
 		mainTable.DataStore:SetAsync("PermanentBans", {})
 	end
+
+	if not mainTable.DataStore:GetAsync("TimeBans") then
+		mainTable.DataStore:SetAsync("TimeBans", {})
+	end
 	
 	task.spawn(function()
 		task.wait(0.4)
@@ -924,6 +953,10 @@ local function setupAdmin(Config, Requirer)
 		
 		for _, bandata in mainTable.DataStore:GetAsync("PermanentBans") do
 			 table.insert(mainTable.Bans, {Type = "Perm", Reason = bandata.Reason, UserId = tonumber(bandata.UserId)})
+		end
+
+		for _, bandata in mainTable.DataStore:GetAsync("TimeBans") do
+			table.insert(mainTable.Bans, {Type = "Time", Reason = bandata.Reason, UserId = tonumber(bandata.UserId), UnbanTime = tonumber(bandata.UnbanTime)})
 		end
 	end)
 	
@@ -1120,6 +1153,10 @@ local function setupAdmin(Config, Requirer)
 				APIFunctions.addUserToBans(Data.userId, {Type = "Perm", Reason = Data.reason})
 			elseif Data.request == "removePermanentBan" then
 				APIFunctions.removeBan(Data.userId, "Perm")
+			elseif Data.request == "addTimeBan" then
+				APIFunctions.addUserToBans(Data.userId, {Type = "Time", Reason = Data.reason, UnbanTime = Data.unbanTime})
+			elseif Data.request == "removeTimeBan" then
+				APIFunctions.removeBan(Data.userId, "Time")
 			end
 		end)
 	end)

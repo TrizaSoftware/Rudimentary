@@ -43,6 +43,15 @@ Command.Handler = function(env, plr, args)
 						end
 					end
 					env.DataStore:SetAsync("PermanentBans", PermanentBans)
+				elseif bandata.Type == "Time" then
+					env.API.CSM.dispatchMessageToServers({request = "removeTimeBan", userId = UserId})
+					local TimeBans = env.DataStore:GetAsync("TimeBans")
+					for i, bd in TimeBans do
+						if bd.UserId == UserId then
+							table.remove(TimeBans, i)
+						end
+					end
+					env.DataStore:SetAsync("TimeBans", TimeBans)
 				elseif bandata.Type == "Trello" then
 					env.API.makeTrelloRequest("removeBan", UserId)
 				end
