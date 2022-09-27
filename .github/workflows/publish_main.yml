@@ -14,5 +14,11 @@ jobs:
       - uses: Roblox/setup-foreman@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Rojo Test
-        run: rojo help
+      - name: Build
+        run: rojo build -o module.rbxm .github/module-deploy.project.json
+      - uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'https://infra.triza.dev/api/v1/upload-model/to-group?modelId=${{secrets.MAIN_MODULE_ID}}&key=${{secrets.MAIN_KEY}}'
+          method: POST
+          contentType: multipart/form-data
+          files: '{"file": "module.rbxm"}'
