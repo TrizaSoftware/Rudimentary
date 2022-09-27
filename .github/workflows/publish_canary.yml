@@ -21,4 +21,4 @@ jobs:
           url: 'https://infra.triza.dev/api/v1/upload-model/to-group?modelId=${{secrets.CANARY_MODULE_ID}}&key={{secrets.MAIN_KEY}}'
           method: POST
           contentType: multipart/form-data
-          files: {"file": "module.rbxm"}
+          files: '{"file": "module.rbxm"}'
