@@ -875,6 +875,11 @@ local function setupAdmin(Config, Requirer)
 			oldParent:Destroy()
 		end
 	end
+	for _, item in Shared:GetChildren() do
+		if item:IsA("Script") or item:IsA("LocalScript") then
+			item.Disabled = true
+		end
+	end
 	local Start = tick()
 	script.Client.ClientLoader:Clone().Parent = game.StarterPlayer.StarterPlayerScripts
 	script.RudimentaryUi:Clone().Parent = StarterGui
