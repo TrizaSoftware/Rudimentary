@@ -247,9 +247,9 @@ function List.new(clnt,Data)
 				break
 			end
 			self:renderItem(i, item)
-			task.wait(0.02)
+			task.wait(0.01)
 			task.spawn(function()
-				task.wait(0.05)
+				task.wait(0.03)
 				if self.ListInstance.Parent then
 					self.ListInstance.ScrollingFrame.CanvasSize = UDim2.new(0,0,0,self.ListInstance.ScrollingFrame.UIListLayout.AbsoluteContentSize.Y + 10)
 				end
@@ -299,7 +299,7 @@ function List.new(clnt,Data)
 	end)
 	]]
 	task.spawn(function()
-		task.wait(0.2)
+		task.wait(0.1)
 		self.FaderInstance:fadeIn(1)
 		if #ListItems == 0 then
 			TweenService:Create(self.ListInstance.NoData, TweenInfo.new(0.5,Enum.EasingStyle.Quint,Enum.EasingDirection.InOut), {TextTransparency = 0}):Play()
@@ -340,7 +340,7 @@ function List:renderItem(name, itemdata)
 			end)
 			self.ItemFrames[name] = Item
 			if not self.Refreshing then
-				task.wait(0.02)
+				task.wait(0.01)
 				Item.Fader:fadeIn(0.5)
 			end
 		end

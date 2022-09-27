@@ -425,6 +425,7 @@ local function makeSettingsData()
 end
 
 local function checkValidKey(plr, key)
+	if not mainTable.Keys[plr.UserId] then repeat task.wait() until mainTable.Keys[plr.UserId] end
 	return if table.find(mainTable.Keys[plr.UserId], key) then true else false
 end
 
@@ -672,7 +673,7 @@ local function manageKeys(player)
 	table.insert(mainTable.Keys[player.UserId], FirstKey)
 	--local OldKey = nil
 	repeat
-		task.wait(1,10)
+		task.wait(math.random(1,10))
 		--[[
 			if OldKey then
 				task.wait(2)

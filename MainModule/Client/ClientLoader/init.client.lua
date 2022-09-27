@@ -83,8 +83,21 @@ Client.UI = {
 local MainInterface = Client.MainInterfaceHolder:WaitForChild("Main UI") :: Frame
 local RudimentaryIcon = Client.MainInterfaceHolder:WaitForChild("RudimentaryIcon")
 local NotificationFrame = Client.MainInterfaceHolder:WaitForChild("Notifications")
+
+
+for _, ui in pairs(MainInterface:GetChildren()) do
+	if MainInterface.Sidebar:FindFirstChild(ui.Name) and ui:IsA("Frame") then
+		local Fader = FaderModule.new(ui)
+		MainInterfaceFaders[ui.Name] = Fader
+		if ui.Name ~= SelectedInterface then
+			MainInterfaceFaders[ui.Name]:fadeOut(0)
+		end
+	end
+end
+
 local InterfaceFader = FaderModule.new(MainInterface)
 local InterfaceDragger = DraggerModule.new(MainInterface)
+
 task.spawn(function()
 	GameInfo = MarketPlaceService:GetProductInfo(game.PlaceId, Enum.InfoType.Asset)
 	MainInterface.General.Holder.GameName.Text = string.format("Name: %s", GameInfo.Name)
@@ -709,17 +722,6 @@ Mouse.Move:Connect(function()
 end)
 
 InterfaceFader:fadeOut()
-
-
-for _, ui in pairs(MainInterface:GetChildren()) do
-	if MainInterface.Sidebar:FindFirstChild(ui.Name) and ui:IsA("Frame") then
-		local Fader = FaderModule.new(ui)
-		MainInterfaceFaders[ui.Name] = Fader
-		if ui.Name ~= SelectedInterface then
-			MainInterfaceFaders[ui.Name]:fadeOut(0)
-		end
-	end
-end
 
 --Snackbar.new("warning", "Client Started")
 
