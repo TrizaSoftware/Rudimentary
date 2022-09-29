@@ -22,7 +22,7 @@ jobs:
       - name: Build for Discord
         run: rojo build -o Rudimentary_Canary_${{steps.gdat.outputs.info}}.rbxm .github/module-deploy.project.json
       - uses: fjogeleit/http-request-action@v1
-         with:
+        with:
           url: '${{secrets.CANARY_WEBHOOK_URL}}'
           method: POST
           contentType: multipart/form-data
