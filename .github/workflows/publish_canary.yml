@@ -16,7 +16,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Get date and Time
         id: gdat
-        run: echo "::set-output name=info::$(date '+%m/%d/%y @ %H:%M')"
+        run: echo "::set-output name=info::$(date '+%m/%d/%y @ %H_%M')"
       - name: Build
         run: rojo build -o module.rbxm .github/module-deploy.project.json
       - name: Build for Discord
