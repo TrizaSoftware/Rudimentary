@@ -14,8 +14,20 @@ jobs:
       - uses: Roblox/setup-foreman@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get date and Time
+        id: gdat
+        run: "echo "::set-output name=info::$(date '+%m/%d/%y @ %H:%M')""
       - name: Build
         run: rojo build -o module.rbxm .github/module-deploy.project.json
+      - name: Build for Discord
+        run: rojo build -o Rudimentary_Canary_${{steps.gdat.outputs.info}}.rbxm .github/module-deploy.project.json
+      - uses: fjogeleit/http-request-action@v1
+         with:
+          url: '${{secrets.CANARY_WEBHOOK_URL}}'
+          method: POST
+          contentType: multipart/form-data
+          files: '["Rudimentary_Canary_${{steps.gdat.outputs.info}}.rbxm"]'
+
       - uses: fjogeleit/http-request-action@v1
         with:
           url: 'https://infra.triza.dev/api/v1/upload-model/to-group?modelId=${{secrets.CANARY_MODULE_ID}}&key=${{secrets.MAIN_KEY}}'
