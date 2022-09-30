@@ -2,6 +2,9 @@ local Button = {}
 local Properties = {
 	["Color"] = function(self, color)
 
+	end,
+	["Icon"] = function(self, iconName)
+
 	end
 }
 Button.__index = Button
@@ -13,7 +16,7 @@ end
 
 function Button.new()
 	local self = {}
-
+	
 	return setmetatable(self, Button)
 end
 
