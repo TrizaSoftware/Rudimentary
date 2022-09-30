@@ -6,13 +6,22 @@ local RudimentaryFolder = ReplicatedStorage:WaitForChild("Rudimentary")
 local Utils = require(RudimentaryFolder.Shared.Utils)
 
 
-function getImageIdFromDecal(decalId)
+function getImageIdFromDecal(decalId:number)
 	local assetInfo = MarketplaceService:GetProductInfo(decalId, Enum.InfoType.Asset)
 	
 	assert(assetInfo.AssetTypeId == Enum.AssetType.Decal.Value)
 
 	local decal = InsertService:LoadAsset(decalId):FindFirstChildWhichIsA("Decal")
 	return decal.Texture
+end
+
+function getAccessoryFromId(id:number)
+	local assetInfo = MarketplaceService:GetProductInfo(id, Enum.InfoType.Asset)
+
+	assert(assetInfo, "Invalid assetId.")
+
+	local model = InsertService:LoadAsset(id):FindFirstChildWhichIsA("Accessory")
+	return model
 end
 
 return {
@@ -79,6 +88,13 @@ return {
 			plr.Character.RudimentaryCape:Destroy()
 			env.API.changeCapeData(plr, {Equipped = false})
 		end
+	end,
+	addAccessory = function(plr, env, id)
+		if not env.API.checkIsDonor(plr) then
+			return false
+		end
+		local accessory = getAccessoryFromId(id)
+		plr.Character:AddAccessory(accessory)
 	end,
 	getWarnings = function(plr, env, userid)
 		if env.Admins[plr.UserId] >= env.Commands.warnings.RequiredAdminLevel then

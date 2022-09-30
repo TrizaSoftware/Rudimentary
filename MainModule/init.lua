@@ -181,7 +181,7 @@ local mainTable = {
 	ChatLogs = {
 		
 	},
-	BannedHatIds = {
+	BannedAssetIds = {
 		1055299
 	},
 	CapeData = {
