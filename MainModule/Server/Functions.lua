@@ -1,5 +1,10 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local InsertService = game:GetService("InsertService")
 local MarketplaceService = game:GetService("MarketplaceService")
+
+local RudimentaryFolder = ReplicatedStorage:WaitForChild("Rudimentary")
+local Utils = require(RudimentaryFolder.Shared.Utils)
+
 
 function getImageIdFromDecal(decalId)
 	local assetInfo = MarketplaceService:GetProductInfo(decalId, Enum.InfoType.Asset)
