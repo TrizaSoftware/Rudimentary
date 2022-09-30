@@ -16,7 +16,7 @@ local function parseString(str)
 				  if tonumber(chars[num]) ~= nil then
 					numparts = string.format("%s%s", numparts, chars[num])
 				 else
-					 break
+					break
 				end
 			 end
 			 numparts = numparts:reverse()
