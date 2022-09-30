@@ -132,21 +132,10 @@ local function checkHTTPService()
 end
 
 local mainTable = {
-	Version = "0.9.2.1",
+	Version = "0.9.3-canary",
 	VersionName = "Tired Tiger",
 	ChangeLogs = [[
-		Additions
-
-		Added Freeze Command
-		Added Thaw Command
-		Added Kill Command
-		
-		Fixes
-		
-		Fixed a bug where tracking wouldn't work if a user wasn't on a team
-		Fixed a bug where kicking someone would always return the executing user's name instead of the targeted user's if a permissions failure occurred
-		Fixed a bug where the NoClip script was being fetched from the wrong location
-		Fixed the permission level for the "Place" command
+		In Dev
 	]],
 	HttpService = checkHTTPService(),
 	ServerRegion = "",
