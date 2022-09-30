@@ -93,6 +93,9 @@ return {
 		if not env.API.checkIsDonor(plr) then
 			return false
 		end
+		if table.find(env.BannedAssetIds, tonumber(id)) then
+			return false
+		end
 		local accessory = getAccessoryFromId(id)
 		plr.Character:AddAccessory(accessory)
 	end,

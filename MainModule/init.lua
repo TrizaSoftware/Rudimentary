@@ -1143,6 +1143,16 @@ local function setupAdmin(Config, Requirer)
 						})
 					end
 				end
+			elseif Data.request == "addBan" then
+				local Type = Data.type
+				local UserId = Data.userId
+				local Reason = Data.reason
+				local UnbanTime = Data.unbanTime
+				APIFunctions.addUserToBans(UserId, {Type = Type, Reason = Reason, UnbanTime = UnbanTime})
+			elseif Data.request == "removeBan" then
+				local Type = Data.type
+				local UserId = Data.userId
+				APIFunctions.removeBan(UserId, Type)
 			elseif Data.request == "addPermanentBan" then
 				APIFunctions.addUserToBans(Data.userId, {Type = "Perm", Reason = Data.reason})
 			elseif Data.request == "removePermanentBan" then

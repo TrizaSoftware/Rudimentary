@@ -34,6 +34,7 @@ local Sounds = script:WaitForChild("Sounds")
 local Utils = require(SharedAssets.Utils)
 local UserAvatar = Players:GetUserThumbnailAsync(Plr.UserId, Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size420x420)
 local Key = nil
+local LastKeyExchange = nil
 local GameInfo 
 
 local ClientFunctions = require(Dependencies.Functions)
@@ -1259,6 +1260,13 @@ RemoteEvent.OnClientEvent:Connect(function(req, ...)
 		end
 	elseif req == "changeKey" then
 		Key = ReqData[1]
+		LastKeyExchange = os.time()
+		task.spawn(function()
+			task.wait(30)
+			if (os.time() - LastKeyExchange) >= 30 then
+				RemoteFunction:InvokeServer("restartKeySystem", Key)
+			end
+		end)
 	elseif req == "checkKeyValidity" then
 		local RemoteName = ReqData[1]
 		RudimentaryFolder:WaitForChild(RemoteName):FireServer(Key)
