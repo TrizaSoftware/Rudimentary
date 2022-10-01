@@ -414,4 +414,7 @@ return {
 		plr.Character.RudimentaryTrackHighlight:Destroy()
 		plr.Character.HumanoidRootPart.RudimentaryTrackAttach:Destroy()
 	end,
+	MakeConfirmationPrompt = function(Client, ...)
+		Client.UI.Make("ConfirmationPrompt", ...)
+	end
 }

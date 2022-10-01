@@ -21,10 +21,6 @@ RemoteEvent:FireServer("signifyClientStart")
 local RemoteFunction = RudimentaryFolder:WaitForChild("RudimentaryRemoteFunction") :: RemoteFunction
 local SharedAssets = RudimentaryFolder:WaitForChild("Shared")
 local Dependencies = script:WaitForChild("Dependencies")
-local ValidInterfaceModules = {
-	"Window",
-	"List"
-}
 local LockedPanels = {
 
 }
@@ -68,14 +64,13 @@ Client.RemoteFunction = RemoteFunction
 Client.UI = {
 	["Theme"] = Data.Theme,
 	["Make"] = function(itemType, ...)
-		if table.find(ValidInterfaceModules, itemType) then
-			local Module = require(Dependencies:WaitForChild(itemType))
-			local suc, res = pcall(Module.new,Client,...)
-			if not suc then
-				warn(res)
-			end
-			return res
+		assert(Dependencies:FindFirstChild(itemType), string.format("%s isn't a valid RudimentaryUIItemType.", itemType))
+		local Module = require(Dependencies:FindFirstChild(itemType))
+		local suc, res = pcall(Module.new,Client,...)
+		if not suc then
+			warn(res)
 		end
+		return res
 	end,
 	["GetFolderForElement"] = function(element)
 		return if Client.MainInterfaceHolder.Assets[Data.Theme]:FindFirstChild(element) then Data.Theme else "Default"
