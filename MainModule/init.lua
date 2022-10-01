@@ -163,7 +163,6 @@ local mainTable = {
 		[4] = "Lead Admin",
 		[5] = "Game Creator",
 		[math.huge] = "Admin Developer"
-
 	},
 	DonorShirt = 10422629762,
 	Commands = {
