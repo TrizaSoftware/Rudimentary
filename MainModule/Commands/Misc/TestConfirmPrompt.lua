@@ -6,7 +6,7 @@ Command.Prefix = "MainPrefix"
 Command.RequiredAdminLevel = 0
 Command.Schema = {}
 Command.Handler = function(env, plr, args)
-	env.RemoteEvent:FireClient(plr, "MakeConfirmationPrompt", "test")
+	env.RemoteEvent:FireClient(plr, "MakeConfirmationPrompt", "This is a test.")
 end
 
 return Command

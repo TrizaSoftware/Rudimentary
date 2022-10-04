@@ -75,8 +75,8 @@ local function makeListItem(pos, itemData, list)
 	return self
 end
 
-function List.new(Client,Data)
-	Client = Client
+function List.new(client,Data)
+	Client = client
 	local self = setmetatable({}, List)
 	self.ScreenGui = Instance.new("ScreenGui", Plr.PlayerGui)
 	local function bringUIToView()

@@ -635,6 +635,7 @@ end
 -- Handle Authentication Request Function
 
 local function handleAuthRequest(message)
+	--[[
 	local AuthFrame = Client.MainInterfaceHolder.Assets.Default.AuthRequestTemplate:Clone()
 	AuthFrame.Parent = Client.MainInterfaceHolder
 	local Fader = FaderModule.new(AuthFrame)
@@ -661,7 +662,11 @@ local function handleAuthRequest(message)
 		AuthFrame:Destroy()
 	end)
 	repeat task.wait() until response ~= nil	
-	return response
+	]]
+	local Prompt = Client.UI.Make("Confirmation Prompt", message)
+	return Prompt.Response:Connect(function(response)
+		return response
+	end)
 end
 
 -- Handle Capes
