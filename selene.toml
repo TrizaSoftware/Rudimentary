@@ -1,0 +1,4 @@
+std="roblox+luau"
+[rules]
+unused_variable = "allow"
+shadowing = "allow"

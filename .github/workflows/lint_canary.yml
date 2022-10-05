@@ -5,15 +5,15 @@ on:
     branches: [canary]
 
 jobs: 
-  lint:
+  lint: 
     name: Lint
     runs-on: ubuntu-latest
-    steps:
-     - uses: actions/checkout@v2
+    steps: 
+      - uses: actions/checkout@v2
         with:
           ref: canary
-     - uses: Roblox/setup-foreman@v1
+      - uses: Roblox/setup-foreman@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-     - name: Lint
-        run: "selene ./MainModule"
+      - name: Lint
+        run: selene ./MainModule
