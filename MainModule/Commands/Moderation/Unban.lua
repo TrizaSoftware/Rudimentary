@@ -35,7 +35,7 @@ Command.Handler = function(env, plr, args)
 		for _, bandata in env.Bans do
 			if bandata.UserId == UserId then
 				if bandata.Type == "Perm" then
-					env.API.CSM.dispatchMessageToServers({request = "removePermanentBan", userId = UserId})
+					env.API.CSM.dispatchMessageToServers({request = "removeBan", userId = UserId, type = "Perm"})
 					local PermanentBans = env.DataStore:GetAsync("PermanentBans")
 					for i, bd in PermanentBans do
 						if bd.UserId == UserId then
@@ -44,7 +44,7 @@ Command.Handler = function(env, plr, args)
 					end
 					env.DataStore:SetAsync("PermanentBans", PermanentBans)
 				elseif bandata.Type == "Time" then
-					env.API.CSM.dispatchMessageToServers({request = "removeTimeBan", userId = UserId})
+					env.API.CSM.dispatchMessageToServers({request = "removeBan", userId = UserId, type = "Time"})
 					local TimeBans = env.DataStore:GetAsync("TimeBans")
 					for i, bd in TimeBans do
 						if bd.UserId == UserId then

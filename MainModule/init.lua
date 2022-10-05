@@ -189,8 +189,13 @@ local mainTable = {
 	ClientLogs = {
 		
 	},
-	TrelloBanListId = nil,
-	TrelloBanCards = {
+	DebugLogs = {
+
+	},
+	TrelloListIds = {
+
+	},
+	TrelloCards = {
 		
 	}
 }
@@ -288,7 +293,7 @@ APIFunctions = {
 		local Data = {...}
 		if request == "removeBan" then
 			local UserId = Data[1]
-			for i, card in mainTable.TrelloBanCards do
+			for i, card in mainTable.TrelloCards.Ban do
 				local Data = card.name:split(":")
 				local uid = tonumber(Data[2])
 				if uid == UserId then
@@ -296,21 +301,21 @@ APIFunctions = {
 						string.format("https://api.trello.com/1/cards/%s?key=%s&token=%s", card.id, AppKey, Token),
 						"DELETE"
 					)
-					table.remove(mainTable.TrelloBanCards, i)
+					table.remove(mainTable.TrelloCards.Ban, i)
 				end
 			end
 		elseif request == "addBan" then
-			assert(mainTable.TrelloBanListId ~= nil, "No ban list exists.")
+			assert(mainTable.TrelloListIds.Ban ~= nil, "No ban list exists.")
 			local UserId = Data[1]
 			local Reason = Data[2]
 			local CardName = string.format("UserId:%s", UserId)
 			local Response = APIFunctions.makeHTTPRequest(
 				string.format("https://api.trello.com/1/cards?idList=%s&name=%s&desc=%s&key=%s&token=%s",
-					mainTable.TrelloBanListId, CardName, Reason, AppKey, Token
+					mainTable.TrelloListIds.Ban, CardName, Reason, AppKey, Token
 				),
 				"POST"
 			)
-			table.insert(mainTable.TrelloBanCards, HttpService:JSONDecode(Response.Body))
+			table.insert(mainTable.TrelloCards.Ban, HttpService:JSONDecode(Response.Body))
 		end
 	end,
 	["requestAuth"] = function(plr, message)
@@ -362,11 +367,11 @@ local function getTrelloData()
 					string.format("https://api.trello.com/1/boards/%s/lists?key=%s&token=%s", BoardId, AppKey, Token)
 				)
 				BoardData = HttpService:JSONDecode(BoardData.Body)
-				table.clear(mainTable.TrelloBanCards)
+				mainTable.TrelloCards.Ban = {}
 				local Bans = {}
 				for _, list in BoardData do
 					if list.name:lower() == "bans" then
-						mainTable.TrelloBanListId = list.id
+						mainTable.TrelloListIds.Ban = list.id
 						local ListData = APIFunctions.makeHTTPRequest(
 							string.format("https://api.trello.com/1/lists/%s/cards?key=%s&token=%s", list.id, AppKey, Token)
 						)
@@ -375,7 +380,7 @@ local function getTrelloData()
 							local Data = card.name:split(":")
 							local UserId = tonumber(Data[2])
 							Bans[UserId] = card.desc
-							table.insert(mainTable.TrelloBanCards, card)
+							table.insert(mainTable.TrelloCards.Ban, card)
 						end
 					end
 				end
@@ -770,7 +775,7 @@ local function handlePlayer(player)
 			if banData.UserId == player.UserId then
 				if banData.Type == "Time" then
 					if os.time() >= banData.UnbanTime then
-						APIFunctions.CSM.dispatchMessageToServers({request = "removeTimeBan", userId = player.UserId})
+						APIFunctions.CSM.dispatchMessageToServers({request = "removeBan", userId = player.UserId, type = "Time"})
 						local TimeBans = mainTable.DataStore:GetAsync("TimeBans")
 						for i, bd in TimeBans do
 							if bd.UserId == player.UserId then
