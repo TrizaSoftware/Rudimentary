@@ -2,3 +2,7 @@ std="roblox+luau"
 [rules]
 unused_variable = "allow"
 shadowing = "allow"
+multiple_statements = "allow"
+parenthese_conditions = "allow"
+empty_if = "allow"
+global_usage = "allow"
