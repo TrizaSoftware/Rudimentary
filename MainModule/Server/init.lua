@@ -1212,7 +1212,6 @@ local function setupAdmin(Config, Requirer)
 			ClonedTable["AdminLevel"] = mainTable.Admins[plr.UserId] or 0
 			ClonedTable["InGameAdmins"] = getAdminsInGame()
 			ClonedTable["AdminLevelName"] = mainTable.AdminLevels[mainTable.Admins[plr.UserId]] or "Error"
-			print(ClonedTable)
 			return ClonedTable
 		elseif req == "getAllAccessableCommandData" then
 			local CommandData = {}
