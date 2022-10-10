@@ -55,7 +55,7 @@ return function (Client)
 
   task.spawn(function()
     while task.wait() do
-      ServerUptimePanel.Value.Text = Client.Utils.formatTimeFromSeconds(Client.RemoteFunction:InvokeServer("getGameTime"))
+      ServerUptimePanel.Value.Text = Client.Utils.formatTimeFromSeconds(workspace.DistributedGameTime)
     end
   end)
 
