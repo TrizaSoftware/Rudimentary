@@ -88,4 +88,14 @@ function Utils.textToBool(text)
 	return texttobool[text:lower()]
 end
 
+function Utils.anOrA(nextWord:string)
+	local vowels = {"a", "e", "i", "o", "u"}
+	local letterToCheck = nextWord:split("")[1]:lower()
+	if table.find(vowels, letterToCheck) then 
+		return "an"
+	else
+		return "a"
+	end
+end
+
 return Utils

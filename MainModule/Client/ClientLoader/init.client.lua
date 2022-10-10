@@ -2,6 +2,8 @@ if _G.RudimentaryClientStarted then
 	script:Destroy()
 end
 
+_G.RudimentaryClientStarted = true
+
 local Start = tick()
 
 -- SERVICES 
@@ -26,8 +28,11 @@ local RemoteFunction = RudimentaryFolder:WaitForChild("RudimentaryRemoteFunction
 RemoteEvent:FireServer("signifyClientStart")
 local ClientData = RemoteFunction:InvokeServer("fetchData")
 local Shared = RudimentaryFolder:WaitForChild("Shared")
+local Utils = require(Shared:WaitForChild("Utils"))
 local Dependencies = script:WaitForChild("Dependencies")
 local Sounds = script:WaitForChild("Sounds")
+local Fader = require(Dependencies.Fader)
+local Dragger = require(Dependencies.Dragger)
 local Key = nil
 local Client = {UI = {}}
 
@@ -57,9 +62,75 @@ end
 Client.MainInterface = Player.PlayerGui:WaitForChild("RudimentaryUi")
 Client.Theme = ClientData.Theme
 Client.MainInterfaceHandlers = {}
+Client.MainInterfaceFaders = {}
 Client.Panel = Client.UI:GetFolderForElement("Panel").Panel:Clone()
+Client.Fader = nil
+Client.Dragger = Dragger.new(Client.Panel)
+Client.PanelOpen = false
+Client.SidebarOpen = false
+Client.InterfaceOpen = "General"
+Client.RemoteEvent = RemoteEvent
+Client.RemoteFunction = RemoteFunction
+Client.Data = ClientData
+Client.Shared = Shared
+Client.Utils = Utils
 
 -- INTIALIZE INTERFACES
+
+Client.Panel.Parent = Client.MainInterface
+
+Client.MainInterface.RudimentaryIcon.Visible = true
+
+local function setVisibility(visibility:boolean)
+  if visibility then
+    Client.Fader:fadeIn(0.8)
+    for faderParent, fader in Client.MainInterfaceFaders do
+      if faderParent == Client.InterfaceOpen then
+        fader:fadeIn(0.8)
+      end
+    end
+  else
+    Client.Fader:fadeOut(0.8)
+    for faderParent, fader in Client.MainInterfaceFaders do
+      if faderParent == Client.InterfaceOpen then
+        fader:fadeOut(0.8)
+      end
+    end
+  end
+end
+
+Client.MainInterface.RudimentaryIcon.MouseButton1Click:Connect(function()
+  setVisibility(not Client.PanelOpen)
+  Client.PanelOpen = not Client.PanelOpen
+end)
+
+Client.Panel.Topbar.Icons.Close.MouseButton1Click:Connect(function()
+  setVisibility(false)
+  Client.PanelOpen = false
+end)
+
+Client.Panel.Topbar.Icons.Menu.MouseButton1Click:Connect(function()
+  if not Client.SidebarOpen then
+    Client.Panel.Sidebar:TweenPosition(UDim2.new(0.723, 0,0.09, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Quint, 0.4, true)
+    task.spawn(function()
+      task.wait(0.2)
+      if Client.SidebarOpen then
+        TweenService:Create(Client.Panel.Grey, TweenInfo.new(1,Enum.EasingStyle.Quint), {BackgroundTransparency = 0.6}):Play()
+      end
+    end)
+    Client.Panel.Grey.Visible = true
+  else
+    Client.Panel.Sidebar:TweenPosition(UDim2.new(1, 0,0.09, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Quint, 0.4, true)
+    local Tween = TweenService:Create(Client.Panel.Grey, TweenInfo.new(1,Enum.EasingStyle.Quint), {BackgroundTransparency = 1})
+    Tween:Play()
+    Tween.Completed:Connect(function(playbackState)
+      if playbackState == Enum.PlaybackState.Completed then
+        Client.Panel.Grey.Visible = false
+      end
+    end)
+  end
+  Client.SidebarOpen = not Client.SidebarOpen
+end)
 
 for _, module in Dependencies.MainInterface:GetChildren() do
   if module:IsA("ModuleScript") and Client.Panel:FindFirstChild(module.Name) then
@@ -69,10 +140,21 @@ end
 
 for interfaceName, _ in Client.MainInterfaceHandlers do
   local Button = Client.UI.Make("Button")
+  Button.Style = "Outlined"
   Button.Text = interfaceName
   Button.Color = Client.UI:GetFolderForElement("PrimaryButtonColor").PrimaryButtonColor.Value
-  Button.Parent = Client.MainInterface
+  Button.Parent = Client.Panel.Sidebar
+  Button.Size = UDim2.new(0.8,0,0.075,0)
+  local FaderInstance = Fader.new(Client.Panel:FindFirstChild(interfaceName))
+  Client.MainInterfaceFaders[interfaceName] = FaderInstance
+  FaderInstance:fadeOut()
+  Button.Clicked:Connect(function()
+    
+  end)
 end
+
+Client.Fader = Fader.new(Client.Panel)
+Client.Fader:fadeOut()
 
 -- MOVE CLIENT IF NEEDED
 
@@ -80,5 +162,41 @@ if script.Parent ~= Player.PlayerScripts then
   script.Parent = Player.PlayerScripts
   warn("Moved client to PlayerScripts")
 end
+
+-- HANDLE CAPES
+
+local function handleCapes()
+	pcall(function()
+		for _, plr in Players:GetPlayers() do
+			if plr.Character and plr.Character:FindFirstChild("RudimentaryCape") then
+				local Torso = plr.Character:FindFirstChild("Torso") or plr.Character:FindFirstChild("UpperTorso")
+				local Motor = plr.Character:FindFirstChild("RudimentaryCape"):FindFirstChild("RudimentaryCapeMotor")
+				local ang = 0.1
+				--if wave then
+				if Torso.Velocity.Magnitude > 1 then
+					ang = ang + ((Torso.Velocity.Magnitude/10)*.05)+.05
+				end
+				--	v.Wave = false
+				--else
+				--v.Wave = true
+				--end
+				ang = ang + math.min(Torso.Velocity.Magnitude/11, .8)
+				Motor.MaxVelocity = math.min((Torso.Velocity.Magnitude/111), .04) + 0.002
+				--if isPlayer then
+				Motor.DesiredAngle = -ang
+				--else
+				--	motor.CurrentAngle = -ang -- bugs
+				--end
+				if Motor.CurrentAngle < -.2 and Motor.DesiredAngle > -.2 then
+					Motor.MaxVelocity = .04
+				end
+			end
+		end
+	end)
+end
+
+RunService.RenderStepped:Connect(function()
+	handleCapes()
+end)
 
 TestService:Message(string.format("Rudimentary Client Initialized in %s second(s)", tick() - Start))
