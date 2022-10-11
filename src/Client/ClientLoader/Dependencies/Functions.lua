@@ -1,6 +1,11 @@
 local Player = game.Players.LocalPlayer
 
-return {
+local FaderModule = require(script.Parent.Fader)
+local DraggerModule = require(script.Parent.Dragger)
+local Snackbar = require(script.Parent.Snackbar)
+
+local Functions = nil
+Functions = {
 	MakeWindow = function(Client, ...)
 		Client.UI.Make("Window", ...)
 	end,
@@ -416,5 +421,219 @@ return {
 	end,
 	MakeConfirmationPrompt = function(Client, ...)
 		Client.UI.Make("ConfirmationPrompt", ...)
+	end,
+	makeList = function(Client, ...)
+		Client.UI.Make("List", ...)
+	end,
+	displayNotification = function(Client, ...)
+		local Data = {...}
+		task.spawn(function()
+			local NotiData = Data[1]
+			local NotiClone = Client.UI:GetFolderForElement("NotificationTemplate").NotificationTemplate:Clone()
+			local Id = #Client.MainInterface.Notifications:GetChildren() 
+			local NotiFader = FaderModule.new(NotiClone)
+			--local AspectRatio = Instance.new("UIAspectRatioConstraint", NotiClone)
+			local Clicked = false
+			--AspectRatio.DominantAxis = Enum.DominantAxis.Width
+			--AspectRatio.AspectType = Enum.AspectType.ScaleWithParentSize
+			--AspectRatio.AspectRatio = 3
+			NotiClone.Size = UDim2.new(1, -20,0, 70)
+			NotiClone.Name = Id		--NotiFader.FadeOutCompleted:Wait()
+			local Type = NotiData.Type
+			Client.Sounds.Notification:Play()
+			if Type == "Alert" then
+				NotiClone.Topbar.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Notification_important)
+			elseif Type == "Error" then
+				NotiClone.Topbar.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Error)
+				Client.Sounds.Error:Play()
+			else
+				NotiClone.Topbar.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Info)
+			end
+			local MainText = NotiData.Text
+			NotiClone.MainText.Text = MainText
+			NotiClone.SecondaryText.Text = if NotiData.SecondaryText then NotiData.SecondaryText else ""
+			NotiClone.Topbar.Title.Text = if NotiData.Title then NotiData.Title else "Notification"
+			if not NotiData.SecondaryText then
+				NotiClone.MainText.Size = UDim2.new(1, 0,0.52, 0)
+			end
+			NotiClone.Parent = Client.MainInterface.Notifications
+			NotiFader:fadeOut()
+			task.wait(0.3)
+			NotiFader:fadeIn(1)
+			NotiClone.Topbar.close.MouseButton1Click:Connect(function()
+				NotiFader:fadeOut(1)
+				NotiFader.FadedOut:Wait()
+				NotiClone:Destroy()
+			end)
+			NotiClone.NotificationButton.MouseButton1Click:Connect(function()
+				if Clicked then return end
+				Clicked = true
+				if NotiData.ExtraData then
+					if NotiData.ExtraData.InstanceToCreate then
+						local InstanceToCreate = NotiData.ExtraData.InstanceToCreate
+						local InstanceData = NotiData.ExtraData.InstanceData
+						if InstanceToCreate == "List" then
+							local Method = NotiData.ExtraData.MethodAfterClick
+							local data = Client.RemoteFunction:InvokeServer(Method)
+							Client.UI.Make("List", {
+								Title = InstanceData.Title, 
+								Items = data, 
+								AllowSearch = true, 
+								AllowRefresh = true, 
+								MethodToCall = Method
+							})
+							--	makeList({Title = InstanceData.Title, Items = data, AllowSearch = true, AllowRefresh = true, MethodToCall = Method})
+						elseif InstanceToCreate == "PrivateMessage" then
+							Functions.makePrivateMessage(Client, InstanceData)
+						end
+					elseif NotiData.ExtraData.ClientFunctionToRun then
+						local suc, result = pcall(Functions[NotiData.ExtraData.ClientFunctionToRun], Client)
+						if not suc then
+							warn(string.format("Client Function Failure: %s", result))
+						end
+					end
+				end
+				NotiFader:fadeOut(1)
+				NotiFader.FadedOut:Wait()
+				NotiClone:Destroy()
+			end)
+		end)
+	end,
+	showHint = function(Client, ...)
+		local Data = {...}
+		local Hint = Data[1]
+		local Title = Hint.Title
+		local Text = Hint.Text
+		local IsSticky = Hint.Sticky		
+		Client.Sounds.Message:Play()
+		local MessageSeconds = math.clamp(math.floor(Text:len()/3),3,9)
+		local Clone = Client.UI:GetFolderForElement("HintTemplate").HintTemplate:Clone()
+		Clone.Name = if not IsSticky then "Hint" else "StickyHint"
+		local Clicked = false
+		local Closing = false
+		Clone.Title.HintTitle.Text = Title
+		Clone.HintText.Text = Text
+		local OtherFrame = if not IsSticky then Client.MainInterfaceHolder.HintFrame:FindFirstChild("Hint") else Client.MainInterfaceHolder.HintFrame:FindFirstChild("StickyHint")
+		if OtherFrame then
+			OtherFrame.Title.Timer.Text = "Closing..."
+			OtherFrame:TweenPosition(UDim2.new(0.276, 0,-1.158, 0),Enum.EasingDirection.InOut,Enum.EasingStyle.Quint,0.5,true)
+			task.spawn(function()
+				task.wait(0.5)
+				pcall(function()
+					OtherFrame:Destroy()
+				end)
+			end)
+			Clone.Parent = Client.MainInterfaceHolder.HintFrame
+			Clone.Visible = true
+			Clone:TweenPosition(UDim2.new(0.276, 0,0.158, 0),Enum.EasingDirection.InOut,Enum.EasingStyle.Quint,0.5,true)
+		else
+			Clone.Parent = Client.MainInterfaceHolder.HintFrame
+			Clone.Visible = true
+			Clone:TweenPosition(UDim2.new(0.276, 0,0.158, 0),Enum.EasingDirection.InOut,Enum.EasingStyle.Quint,0.5,true)
+		end
+		task.spawn(function()
+			if not IsSticky then
+				for i = MessageSeconds,0,-1 do
+					if i > 0 then
+						if Clone.Parent then
+							if Closing then
+								break
+							end
+							Clone.Title.Timer.Text = string.format("Closes in: %s.0", i)
+							task.wait(1)
+						end
+					else
+						break
+					end
+				end
+				Closing = true
+				if Clone.Parent then
+					Clone.Title.Timer.Text = "Closing..."
+					task.wait(0.5)
+					Clone:TweenPosition(UDim2.new(0.276, 0,-1.158, 0),Enum.EasingDirection.InOut,Enum.EasingStyle.Quint,0.5,true)
+					task.wait(0.6)
+					Clone:Destroy()
+				end
+			else
+				Clone.Title.Timer.Text = "Click to Dismiss"
+			end
+		end)
+		Clone.HintButton.MouseButton1Click:Connect(function()
+			if Clicked then return end
+			Clicked = true
+			Closing = true
+			Clone.Title.Timer.Text = "Closing..."
+			task.wait(0.5)
+			Clone:TweenPosition(UDim2.new(0.276, 0,-1.158, 0),Enum.EasingDirection.InOut,Enum.EasingStyle.Quint,0.5,true)
+			task.wait(0.6)
+			Clone:Destroy()
+		end)
+	end,
+	makePrivateMessage = function(Client, ...)
+		local Data = {...}
+		local PrivateMessageData = Data[1]
+		local PMClone = Client.MainInterfaceHolder.Assets.Default.PrivateMessageTemplate:Clone()
+		local PMFader = FaderModule.new(PMClone)
+		local PMDragger = DraggerModule.new(PMClone)
+		local Clicked = false
+		if not PrivateMessageData.CanRespond then
+			PMClone.Contents.Reply.send.Visible = false
+			PMClone.Contents.Reply.TextEditable = false
+			PMClone.Contents.Reply.PlaceholderText = "You Can't Reply To This Message."
+		else
+			if not PrivateMessageData.Sender then
+				PrivateMessageData.Sender = "Server"
+			end
+		end
+		if PrivateMessageData.CanCopyMessage then
+			PMClone.Contents.MessageCopyable.Text = PrivateMessageData.Text
+			PMClone.Contents.MessageCopyable.Visible = true
+			PMClone.Contents.Message.Visible = false
+		else
+			PMClone.Contents.Message.Text = PrivateMessageData.Text
+		end
+		PMClone.Top.clear.MouseButton1Click:Connect(function()
+			if Clicked then return end
+			Clicked = true
+			PMFader:fadeOut(1)
+			task.spawn(function()
+				task.wait(1.1)
+				PMClone:Destroy()
+			end)
+		end)
+		PMClone.Contents.Reply.send.MouseButton1Click:Connect(function()
+			local Message = PMClone.Contents.Reply.Text
+			if Message:len() >= 1 then
+				if Clicked then return end
+				Clicked = true
+				if PrivateMessageData.Sender ~= "Server" and PrivateMessageData.Sender ~= nil then
+					local Response = Client.RemoteFunction:InvokeServer("sendPrivateMessage", PrivateMessageData.Sender, Message, Key)
+					if typeof(Response) == "boolean" then
+						if Response == true then
+							Functions.showHint("Success", "Successfully Sent Message.")	
+						else
+							Functions.showHint("Error", "Somehow A Fatal Error Has Occurred.")	
+						end
+					else
+						Functions.showHint("Error", Response)					
+					end
+				end
+				PMFader:fadeOut(1)
+				task.spawn(function()
+					task.wait(1.1)
+					PMClone:Destroy()
+				end)
+			else
+				Snackbar.new("error", "You can't send an empty message.")
+			end
+		end)
+		PMFader:fadeOut()
+		PMClone.Name = PrivateMessageData.Title
+		PMClone.Top.Title.Text = PrivateMessageData.Title
+		PMClone.Parent = Client.MainInterfaceHolder
+		task.wait(0.5)
+		PMFader:fadeIn(1)
 	end
 }
+
+return Functions

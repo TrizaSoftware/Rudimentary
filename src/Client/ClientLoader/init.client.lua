@@ -75,6 +75,8 @@ Client.RemoteFunction = RemoteFunction
 Client.Data = ClientData
 Client.Shared = Shared
 Client.Utils = Utils
+Client.Sounds = Sounds
+Client.Icons = require(Dependencies.MaterialIcons)
 
 -- INTIALIZE INTERFACES
 
@@ -154,6 +156,10 @@ for interfaceName, _ in Client.MainInterfaceHandlers do
   end)
 end
 
+Mouse.Move:Connect(function()
+	Client.MainInterface.HoverData.Position = UDim2.new(0, Mouse.X + 10, 0, Mouse.Y +15)
+end)
+
 Client.Fader = Fader.new(Client.Panel)
 Client.Fader:fadeOut()
 
@@ -210,6 +216,9 @@ RemoteEvent.OnClientEvent:Connect(function(req, ...)
     local RemoteName = Data[1]
     RudimentaryFolder:WaitForChild(RemoteName):FireServer(Key)
   elseif Functions[req] then
-    pcall(Functions[req], Client, ...)
+      local suc, err = pcall(Functions[req], Client, ...)
+      if not suc then
+        warn(err)
+      end
   end
 end)

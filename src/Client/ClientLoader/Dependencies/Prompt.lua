@@ -66,7 +66,7 @@ function Prompt.new(Title, Type, Data)
 			self.Fader:fadeOut(0.5)
 			self.Result:Fire(nil)
 		end)
-		self.Fader.FadeOutCompleted:Connect(function()
+		self.Fader.FadedOut:Connect(function()
 			self.Frame:Destroy()
 		end)
 	end

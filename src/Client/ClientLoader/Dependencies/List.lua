@@ -64,9 +64,9 @@ local function makeListItem(pos, itemData, list)
 	listElemClone.MouseEnter:Connect(function()
 		self.MouseEntered:Fire()
 		if typeof(itemData) == "string" then
-			Client.MainInterfaceHolder.HoverData.Text = itemData
+			Client.MainInterface.HoverData.Text = itemData
 		else
-			Client.MainInterfaceHolder.HoverData.Text = string.format("%s%s",itemData.Data,if itemData.ExtraData then "\n"..itemData.ExtraData else "")
+			Client.MainInterface.HoverData.Text = string.format("%s%s",itemData.Data,if itemData.ExtraData then "\n"..itemData.ExtraData else "")
 		end
 	end)
 	listElemClone.MouseLeave:Connect(function()
@@ -172,7 +172,7 @@ function List.new(client,Data)
 						end
 					end
 					frame.Fader:fadeOut(0.3)
-					frame.Fader.FadeOutCompleted:Wait()
+					frame.Fader.FadedOut:Wait()
 					frame.Item:Destroy()
 				end)
 			end
@@ -268,18 +268,17 @@ function List.new(client,Data)
 				task.spawn(function()
 					local frameData = self.ItemFrames[i]
 					frameData.Fader:fadeOut(0.3)
-					frameData.Fader.FadeOutCompleted:Wait()
+					frameData.Fader.FadedOut:Wait()
 				end)
 			end
 		end
 		task.wait(0.2)
 		self.FaderInstance:fadeOut(1)
-		self.FaderInstance.FadeOutCompleted:Wait()
+		self.FaderInstance.FadedOut:Wait()
 		self.ScreenGui:Destroy()
-		self.FaderInstance:Destroy()
 	end)
 	self.ListInstance.MouseLeave:Connect(function()
-		Client.MainInterfaceHolder.HoverData.Visible = false
+		Client.MainInterface.HoverData.Visible = false
 	end)
 	
 	self.ScreenGui.Name = Key(15)
@@ -333,10 +332,10 @@ function List:renderItem(name, itemdata)
 			local Item = makeListItem(name, itemdata, self.ListInstance)
 			Item.MouseEntered:Connect(function()
 				if self.Clicked then return end
-				Client.MainInterfaceHolder.HoverData.Visible = true
+				Client.MainInterface.HoverData.Visible = true
 			end)
 			Item.MouseLeave:Connect(function()
-				Client.MainInterfaceHolder.HoverData.Visible = false
+				Client.MainInterface.HoverData.Visible = false
 			end)
 			self.ItemFrames[name] = Item
 			if not self.Refreshing then

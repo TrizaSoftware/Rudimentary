@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
 
 local Player = Players.LocalPlayer
-local Icons = require(script.Parent.Parent.MaterialIcons)
 
 local function getTimeOfDayString()
   local dateTime = DateTime.now():ToLocalTime()
@@ -34,20 +33,20 @@ return function (Client)
   GameInfoCategory.Visible = true
 
   local PlaceNamePanel = CategoryItemTemplate:Clone()
-  PlaceNamePanel.Icon.Image = string.format("rbxassetid://%s", Icons.Home)
+  PlaceNamePanel.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Home)
   PlaceNamePanel.CategoryItemName.Text = "Name"
   PlaceNamePanel.Value.Text = MarketplaceService:GetProductInfo(game.PlaceId, Enum.InfoType.Asset).Name
   PlaceNamePanel.Parent = GameInfoCategory.ScrollingFrame
   PlaceNamePanel.Visible = true
 
   local ServerUptimePanel = CategoryItemTemplate:Clone()
-  ServerUptimePanel.Icon.Image = string.format("rbxassetid://%s", Icons.Schedule)
+  ServerUptimePanel.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Schedule)
   ServerUptimePanel.CategoryItemName.Text = "Server Age"
   ServerUptimePanel.Parent = GameInfoCategory.ScrollingFrame
   ServerUptimePanel.Visible = true
 
   local ServerPlayersPanel = CategoryItemTemplate:Clone()
-  ServerPlayersPanel.Icon.Image = string.format("rbxassetid://%s", Icons.People)
+  ServerPlayersPanel.Icon.Image = string.format("rbxassetid://%s", Client.Icons.People)
   ServerPlayersPanel.CategoryItemName.Text = "Players In Server"
   ServerPlayersPanel.Value.Text = #Players:GetPlayers()
   ServerPlayersPanel.Parent = GameInfoCategory.ScrollingFrame
