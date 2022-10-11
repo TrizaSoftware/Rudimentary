@@ -33,7 +33,7 @@ function Window.new(Client,Title,Instances,Size)
 		end
 	end
 	bringUIToView()
-	self.WindowInstance = Client.MainInterfaceHolder.Assets[Client.UI.GetFolderForElement("WindowTemplate")]:FindFirstChild("WindowTemplate"):Clone()
+	self.WindowInstance = Client.UI:GetFolderForElement("WindowTemplate").WindowTemplate:Clone()
 	self.WindowInstance.Topbar.WindowName.Text = Title
 	for instance, properties in Instances do
 		self:addItem(instance, properties)

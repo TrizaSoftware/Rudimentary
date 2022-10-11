@@ -27,7 +27,7 @@ local function makeListItem(pos, itemData, list)
 	local self = {}
 	self.MouseEntered = Signal.new()
 	self.MouseLeave = Signal.new()
-	local listElemClone = Client.MainInterfaceHolder.Assets[Client.UI.GetFolderForElement("ListElementTemplate")].ListElementTemplate:Clone()
+	local listElemClone = Client.UI:GetFolderForElement("ListElementTemplate").ListElementTemplate:Clone()
 	local ElementFader = Fader.new(listElemClone)
 	listElemClone.Name = pos
 	self.Item = listElemClone
@@ -88,7 +88,7 @@ function List.new(client,Data)
 		end
 	end
 	bringUIToView()
-	self.ListInstance = Client.MainInterfaceHolder.Assets[Client.UI.GetFolderForElement("ListTemplate")].ListTemplate:Clone()
+	self.ListInstance = Client.UI:GetFolderForElement("ListTemplate").ListTemplate:Clone()
 	self.DraggerInstance = Dragger.new(self.ListInstance, true)
 	self.FaderInstance = Fader.new(self.ListInstance)
 	self.FaderInstance:fadeOut()

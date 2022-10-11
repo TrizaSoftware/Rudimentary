@@ -33,6 +33,7 @@ local Dependencies = script:WaitForChild("Dependencies")
 local Sounds = script:WaitForChild("Sounds")
 local Fader = require(Dependencies.Fader)
 local Dragger = require(Dependencies.Dragger)
+local Functions = require(Dependencies.Functions)
 local Key = nil
 local Client = {UI = {}}
 
@@ -51,7 +52,7 @@ end
 
 function Client.UI.Make(element, ...)
   assert(Dependencies:FindFirstChild(element), string.format("%s isn't a valid Dependency.", element))
-  local suc, res = pcall(require(Dependencies:FindFirstChild(element)).new, ...)
+  local suc, res = pcall(require(Dependencies:FindFirstChild(element)).new, Client, ...)
   if not suc then
     warn(res)
   else
@@ -200,3 +201,15 @@ RunService.RenderStepped:Connect(function()
 end)
 
 TestService:Message(string.format("Rudimentary Client Initialized in %s second(s)", tick() - Start))
+
+RemoteEvent.OnClientEvent:Connect(function(req, ...)
+  local Data = {...}
+  if req == "changeKey" then
+    Key = Data[1]
+  elseif req == "checkKeyValidity" then
+    local RemoteName = Data[1]
+    RudimentaryFolder:WaitForChild(RemoteName):FireServer(Key)
+  elseif Functions[req] then
+    pcall(Functions[req], Client, ...)
+  end
+end)
