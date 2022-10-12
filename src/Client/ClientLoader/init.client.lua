@@ -46,6 +46,15 @@ end
 
 -- CLIENT TABLE SETUP
 
+function Client:GetKey()
+ local checkString = string.format("Players.%s.PlayerGui.RudimentaryUi.ClientLoader", Player.Name)
+ local information = debug.traceback():split("GetKey")[2]
+ information = information:sub(2,information:len())
+ if checkString == information:sub(1,checkString:len()) then
+  return Key
+ end
+end
+
 function Client.UI:GetFolderForElement(element:string)
   return if Client.MainInterface.Assets[Client.Theme]:FindFirstChild(element) then Client.MainInterface.Assets[Client.Theme] else Client.MainInterface.Assets.Default
 end

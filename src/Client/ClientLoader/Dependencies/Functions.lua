@@ -513,7 +513,7 @@ Functions = {
 		local Closing = false
 		Clone.Title.HintTitle.Text = Title
 		Clone.HintText.Text = Text
-		local OtherFrame = if not IsSticky then Client.MainInterfaceHolder.HintFrame:FindFirstChild("Hint") else Client.MainInterfaceHolder.HintFrame:FindFirstChild("StickyHint")
+		local OtherFrame = if not IsSticky then Client.MainInterface.HintFrame:FindFirstChild("Hint") else Client.MainInterface.HintFrame:FindFirstChild("StickyHint")
 		if OtherFrame then
 			OtherFrame.Title.Timer.Text = "Closing..."
 			OtherFrame:TweenPosition(UDim2.new(0.276, 0,-1.158, 0),Enum.EasingDirection.InOut,Enum.EasingStyle.Quint,0.5,true)
@@ -523,11 +523,11 @@ Functions = {
 					OtherFrame:Destroy()
 				end)
 			end)
-			Clone.Parent = Client.MainInterfaceHolder.HintFrame
+			Clone.Parent = Client.MainInterface.HintFrame
 			Clone.Visible = true
 			Clone:TweenPosition(UDim2.new(0.276, 0,0.158, 0),Enum.EasingDirection.InOut,Enum.EasingStyle.Quint,0.5,true)
 		else
-			Clone.Parent = Client.MainInterfaceHolder.HintFrame
+			Clone.Parent = Client.MainInterface.HintFrame
 			Clone.Visible = true
 			Clone:TweenPosition(UDim2.new(0.276, 0,0.158, 0),Enum.EasingDirection.InOut,Enum.EasingStyle.Quint,0.5,true)
 		end
@@ -572,7 +572,7 @@ Functions = {
 	makePrivateMessage = function(Client, ...)
 		local Data = {...}
 		local PrivateMessageData = Data[1]
-		local PMClone = Client.MainInterfaceHolder.Assets.Default.PrivateMessageTemplate:Clone()
+		local PMClone = Client.UI:GetFolderForElement("PrivateMessageTemplate").PrivateMessageTemplate:Clone()
 		local PMFader = FaderModule.new(PMClone)
 		local PMDragger = DraggerModule.new(PMClone)
 		local Clicked = false
@@ -607,15 +607,15 @@ Functions = {
 				if Clicked then return end
 				Clicked = true
 				if PrivateMessageData.Sender ~= "Server" and PrivateMessageData.Sender ~= nil then
-					local Response = Client.RemoteFunction:InvokeServer("sendPrivateMessage", PrivateMessageData.Sender, Message, Key)
+					local Response = Client.RemoteFunction:InvokeServer("sendPrivateMessage", PrivateMessageData.Sender, Message, Client:GetKey())
 					if typeof(Response) == "boolean" then
 						if Response == true then
-							Functions.showHint("Success", "Successfully Sent Message.")	
+							Functions.showHint(Client, {Title = "Success", Text = "Successfully Sent Message."})	
 						else
-							Functions.showHint("Error", "Somehow A Fatal Error Has Occurred.")	
+							Functions.showHint(Client, {Title = "Error", Text = "Somehow A Fatal Error Has Occurred."})	
 						end
 					else
-						Functions.showHint("Error", Response)					
+						Functions.showHint(Client, {Title = "Error", Text = tostring(Response)})					
 					end
 				end
 				PMFader:fadeOut(1)
@@ -630,7 +630,7 @@ Functions = {
 		PMFader:fadeOut()
 		PMClone.Name = PrivateMessageData.Title
 		PMClone.Top.Title.Text = PrivateMessageData.Title
-		PMClone.Parent = Client.MainInterfaceHolder
+		PMClone.Parent = Client.MainInterface
 		task.wait(0.5)
 		PMFader:fadeIn(1)
 	end
