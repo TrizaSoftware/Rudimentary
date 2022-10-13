@@ -94,6 +94,7 @@ function List.new(client,Data)
 	self.FaderInstance:fadeOut()
 	self.Clicked = false
 	self.LoadingItems = false
+	self.Refreshing = false
 	self.ItemFrames = {}
 		
 	local AllowSearch = Data.AllowSearch
@@ -102,7 +103,6 @@ function List.new(client,Data)
 	local AutoRefreshSeconds = Data.AutoRefreshSeconds
 	local ListItems = Data.Items
 	local Title = Data.Title
-	local Refreshing = false
 	local Searching = false
 		
 	self.ListInstance.Topbar.Listname.Text = Client.Utils.shortenText(Title, 20)
@@ -153,12 +153,12 @@ function List.new(client,Data)
 		if AllowSearch then
 			self.ListInstance.Topbar.Search.Visible = false
 		end
-		Refreshing = true
+		self.Refreshing = true
 		task.spawn(function()
 			repeat 
 				self.ListInstance.Topbar.Refresh.Rotation = self.ListInstance.Topbar.Refresh.Rotation + 4
 				task.wait()
-			until Refreshing == false
+			until self.Refreshing == false
 			TweenService:Create(self.ListInstance.Topbar.Refresh,TweenInfo.new(0.5,Enum.EasingStyle.Quint,Enum.EasingDirection.InOut),{Rotation = 0}):Play()
 		end)
 		local newData = Client.RemoteFunction:InvokeServer(Data.MethodToCall, table.unpack(Data.ReqArgs or {}))
@@ -170,6 +170,9 @@ function List.new(client,Data)
 						if itemFrame.Item == item then
 							frame = itemFrame
 						end
+					end
+					if not frame then 
+						return
 					end
 					frame.Fader:fadeOut(0.3)
 					frame.Fader.FadedOut:Wait()
@@ -187,7 +190,7 @@ function List.new(client,Data)
 		end
 		]]
 		task.wait(1)
-		Refreshing = false
+		self.Refreshing = false
 		self.ListInstance.Topbar.Search.Visible = true
 		self.ListInstance.Topbar.SearchQuery.Visible = false
 		for i in pairs(self.ItemFrames) do
@@ -202,6 +205,9 @@ function List.new(client,Data)
 			self.LoadingItems = if #newData > 0 then true else false
 			for i, item in pairs(newData) do
 				if not self.ListInstance.Parent then
+					break
+				end
+				if self.Refreshing then
 					break
 				end
 				self:renderItem(i, item)
@@ -223,9 +229,9 @@ function List.new(client,Data)
 		task.spawn(function()
 			repeat 
 				task.wait(AutoRefreshSeconds or 2)
-				if not Refreshing and not Searching and not self.LoadingItems then
+				if not self.Refreshing and not Searching and not self.LoadingItems then
 					refresh()
-					repeat task.wait() until not Refreshing
+					repeat task.wait() until not self.Refreshing
 					--task.wait(if #self.ListInstance.ScrollingFrame:GetChildren() - 1 == 0 then 0.5 else #self.ListInstance.ScrollingFrame:GetChildren() - 1)
 				end
 			until self.ListInstance == nil
@@ -236,7 +242,7 @@ function List.new(client,Data)
 			warn("Can't fetch new data if no method is stated.")
 			return
 		end
-		if Refreshing or self.LoadingItems then return end
+		if self.Refreshing then return end
 		refresh()
 	end)
 	task.spawn(function()
@@ -262,7 +268,7 @@ function List.new(client,Data)
 	self.ListInstance.Topbar.Close.MouseButton1Click:Connect(function()
 		if self.Clicked then return end
 		self.Clicked = true
-		if not Refreshing then
+		if not self.Refreshing then
 			for i = #self.ItemFrames, 0,-1 do 
 				if i == 0 then break end
 				task.spawn(function()

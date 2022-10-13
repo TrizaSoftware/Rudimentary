@@ -458,7 +458,7 @@ Functions = {
 			end
 			NotiClone.Parent = Client.MainInterface.Notifications
 			NotiFader:fadeOut()
-			task.wait(0.3)
+			task.wait(0.2)
 			NotiFader:fadeIn(1)
 			NotiClone.Topbar.close.MouseButton1Click:Connect(function()
 				NotiFader:fadeOut(1)
