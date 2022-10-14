@@ -901,12 +901,15 @@ local function setupAdmin(Config, Requirer)
 	end
 	
 	mainTable.GroupConfig = Config.GroupConfig
-	
-	for _, player:Player in Players:GetPlayers() do
-		if not StartedClients[player] then
-			handlePlayer(player)
+
+	task.spawn(function()
+		task.wait(2)
+		for _, player:Player in Players:GetPlayers() do
+			if not StartedClients[player] then
+				handlePlayer(player)
+			end
 		end
-	end
+	end)
 	
 	task.spawn(function()
 		local ownerId = nil

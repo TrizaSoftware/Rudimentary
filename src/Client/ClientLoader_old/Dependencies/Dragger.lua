@@ -11,7 +11,7 @@
 	 
 	 Dragger
 	  
-	 Â© T:Riza Corporation 2020-2022
+	 © T:Riza Corporation 2020-2022
 	 
 ]]
 
