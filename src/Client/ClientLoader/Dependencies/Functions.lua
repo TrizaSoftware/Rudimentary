@@ -428,6 +428,7 @@ Functions = {
 	displayNotification = function(Client, ...)
 		local Data = {...}
 		task.spawn(function()
+			task.wait(0.1)
 			local NotiData = Data[1]
 			local NotiClone = Client.UI:GetFolderForElement("NotificationTemplate").NotificationTemplate:Clone()
 			local Id = #Client.MainInterface.Notifications:GetChildren() 
@@ -458,6 +459,7 @@ Functions = {
 			end
 			NotiClone.Parent = Client.MainInterface.Notifications
 			NotiFader:fadeOut()
+			NotiFader.FadedOut:Wait()
 			task.wait(0.2)
 			NotiFader:fadeIn(1)
 			NotiClone.Topbar.close.MouseButton1Click:Connect(function()
