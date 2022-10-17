@@ -1,6 +1,6 @@
 local Command = {}
 Command.Name = "noclip"
-Command.Description = "Lets user(s) noclip."
+Command.Description = "Lets the specified user(s) noclip."
 Command.Aliases = {"nc"}
 Command.Prefix = "MainPrefix"
 Command.RequiredAdminLevel = 2

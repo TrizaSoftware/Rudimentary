@@ -22,6 +22,13 @@ function ConfirmationPrompt.new(Client, message)
         MinTextSize = 10,
         Parent = Message
     })
+    Window.WindowInstance.AnchorPoint = Vector2.new(0.5,0.5)
+    Window.WindowInstance.Size = UDim2.new(0.224, 0,0.246, 0)
+    Window.WindowInstance.Position = UDim2.new(0.499, 0,0.499, 0)
+    Window:addItem("UIAspectRatioConstraint", {
+        AspectRatio = Window.WindowInstance.AbsoluteSize.X / Window.WindowInstance.AbsoluteSize.Y,
+        Parent = "Window"
+    })
     local Yes = Client.UI.Make("Button")
     Yes.Color = Color3.fromRGB(27, 180, 27)
    -- Yes.TextColor = Color3.fromRGB(255,255,255)
@@ -40,15 +47,28 @@ function ConfirmationPrompt.new(Client, message)
     No.Parent = ActualWindow
 
     Yes.Clicked:Connect(function()
-        Signal:Fire(true)
+        self.Response:Fire(true)
+        Window.FaderInstance:fadeOut(1)
     end)
 
     No.Clicked:Connect(function()
-        Signal:Fire(false)
+        self.Response:Fire(false)
+        Window.FaderInstance:fadeOut(1)
     end)
 
     Window.WindowInstance.Topbar.close.MouseButton1Click:Connect(function()
-        Signal:Fire(false)
+        self.Response:Fire(false)
+    end)
+    
+    task.spawn(function()
+        task.wait(1)
+        local Connection = nil
+        Connection = Window.FaderInstance.FadedOut:Connect(function()
+            pcall(function()
+                Window:Destroy()
+            end)
+            Connection:Disconnect()
+        end)
     end)
 
     return self

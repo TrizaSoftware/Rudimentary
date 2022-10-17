@@ -29,7 +29,7 @@ Command.Handler = function(env, plr, args)
 		return
 	end
 	env.API.enableShutdownMode()
-	env.RemoteEvent:FireAllClients("displayMessage", {Title = "Shutdown", Text = "This server is shutting down.\nJoin a new server."})
+--	env.RemoteEvent:FireAllClients("displayMessage", {Title = "Shutdown", Text = "This server is shutting down.\nJoin a new server."})
 	env.RemoteEvent:FireAllClients("showHint", {Title = "Shutdown", Text = "This server is shutting down.", IsSticky = true})
 	task.wait(2)
 	for _, user in Players:GetPlayers() do

@@ -17,6 +17,7 @@ local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local MessagingService = game:GetService("MessagingService")
 local MarketPlaceService = game:GetService("MarketplaceService")
+local RunService = game:GetService("RunService")
 local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 local GroupService = game:GetService("GroupService")
@@ -902,14 +903,14 @@ local function setupAdmin(Config, Requirer)
 	
 	mainTable.GroupConfig = Config.GroupConfig
 
-	task.spawn(function()
-		task.wait(2)
-		for _, player:Player in Players:GetPlayers() do
+	for _, player:Player in Players:GetPlayers() do
+		task.spawn(function()
+			task.wait(if RunService:IsStudio() then 0 else 10)
 			if not StartedClients[player] then
 				handlePlayer(player)
 			end
-		end
-	end)
+		end)
+	end
 	
 	task.spawn(function()
 		local ownerId = nil

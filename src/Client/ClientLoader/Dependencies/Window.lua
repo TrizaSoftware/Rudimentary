@@ -53,9 +53,9 @@ function Window.new(Client,Title,Instances,Size)
 		if Clicked then return end
 		Clicked = true
 		self.FaderInstance:fadeOut(1)
-		task.spawn(function()
-			task.wait(1)
-			self.ScreenGui:Destroy()
+		task.wait(1)
+		pcall(function()
+			self:Destroy()
 		end)
 	end)
 	task.spawn(function()
@@ -92,6 +92,11 @@ function Window:addItem(ItemType:Instance, Properties)
 		Item[property] = value
 	end
 	return Item
+end
+
+function Window:Destroy()
+	self.ScreenGui:Destroy()
+	setmetatable(self, nil)
 end
 
 return Window

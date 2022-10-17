@@ -30,7 +30,6 @@ Functions = {
 			BorderSizePixel = 0
 		})
 		task.spawn(function()
-			task.wait(0.5)
 			local MainScrollingFrame = ScrollingFrameTemplate:Clone()
 			MainScrollingFrame.Parent = Window.WindowInstance
 			local UIListLayout = Window:addItem("UIListLayout", {
@@ -45,7 +44,6 @@ Functions = {
 			})
 			local CapePanel = PanelTemplate:Clone()
 			CapePanel.Name = "CapePanel"
-			CapePanel.Parent = MainScrollingFrame
 			local UICorner = Window:addItem("UICorner", {
 				CornerRadius = UDim.new(0,8),
 			})
@@ -58,8 +56,8 @@ Functions = {
 				Size = UDim2.new(0.9,0,0.2,0),
 				Position = UDim2.new(0.05,0,0,0),
 				TextXAlignment = "Left",
+				BackgroundTransparency = 1,
 				Parent = CapePanel,
-				BackgroundTransparency = 1
 			})
 			local TextSizeConstraint = Window:addItem("UITextSizeConstraint", {
 				MaxTextSize = 15,
@@ -89,6 +87,8 @@ Functions = {
 				Position = UDim2.new(0.05,0,0,0),
 				BackgroundColor3 = Window.WindowInstance.Topbar.BackgroundColor3,
 			})
+			
+			CapePanel.Parent = MainScrollingFrame
 			
 			-- Handle Color Data
 			
@@ -265,7 +265,6 @@ Functions = {
 			Parent = Window.WindowInstance
 		})
 		task.spawn(function()
-			task.wait(0.5)
 			local TextLabel = Window:addItem("TextLabel", {
 				BackgroundTransparency = 1,
 				Font = Enum.Font.Gotham,
@@ -287,9 +286,9 @@ Functions = {
 							task.wait(3)
 							if Window.WindowInstance.Parent then
 								script.Parent.Parent.Sounds.ClockAlarm:Stop()
-								Window.WindowInstance.FaderInstance:FadeOut(1)
+								Window.FaderInstance:fadeOut(1)
 								task.wait(1)
-								Window.ScreenGui:Destroy()
+								Window:Destroy()
 							end
 						end)
 						break
@@ -635,6 +634,20 @@ Functions = {
 		PMClone.Parent = Client.MainInterface
 		task.wait(0.5)
 		PMFader:fadeIn(1)
+	end,
+	handleAuthRequest = function(Client, ...)
+		local Remote = ...
+		Remote.OnClientInvoke = function(message)
+			local Prompt = Client.UI.Make("ConfirmationPrompt", message)
+			local Response = nil
+			Prompt.Response:Connect(function(res)
+				Response = res
+			end)
+			repeat
+				task.wait()
+			until Response
+			return Response
+		end
 	end
 }
 

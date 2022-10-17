@@ -63,7 +63,7 @@ function Client.UI.Make(element, ...)
   assert(Dependencies:FindFirstChild(element), string.format("%s isn't a valid Dependency.", element))
   local suc, res = pcall(require(Dependencies:FindFirstChild(element)).new, Client, ...)
   if not suc then
-    warn(res)
+    warn(string.format("Client UI Error: %s", tostring(res)))
   else
     return res
   end
@@ -94,6 +94,7 @@ Client.Panel.Parent = Client.MainInterface
 Client.MainInterface.RudimentaryIcon.Visible = true
 
 local function setVisibility(visibility:boolean)
+  if not Client.Fader then return end
   if visibility then
     Client.Fader:fadeIn(0.8)
     for faderParent, fader in Client.MainInterfaceFaders do
@@ -230,4 +231,8 @@ RemoteEvent.OnClientEvent:Connect(function(req, ...)
         warn(err)
       end
   end
+end)
+
+LogService.MessageOut:Connect(function(message)
+	RemoteEvent:FireServer("sendClientLog", message, Key)
 end)
