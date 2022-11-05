@@ -26,8 +26,9 @@ local Players = game:GetService("Players")
 local Chat = game:GetService("Chat")
 local Shared = script.Parent:WaitForChild("Shared")
 local Assets = script.Parent:WaitForChild("Assets")
+local TNet = require(Shared.TNet)
 local Utils = require(Shared.Utils)
-local Signal = require(Shared.Signal)
+local Signal = require(Shared.BetterSignal)
 local Dependencies = script.Dependencies
 local DataStoreEngine = require(Dependencies.DataStoreEngine)
 local ServerFunctions = require(Dependencies.Functions)
@@ -351,6 +352,10 @@ APIFunctions = {
 	end,
 	["enableShutdownMode"] = function()
 		mainTable.ShutDown = true
+	end,
+	["addDebugLog"] = function(message: string)
+		assert(typeof(message) == "string", "A Debug Log must be a string.")
+		table.insert(mainTable.DebugLogs, mess)
 	end,
 	["CSM"] = {
 		["dispatchMessageToServers"] = function(message)
@@ -893,6 +898,8 @@ local function setupAdmin(Config, Requirer)
 	AuthFolder.Name = "AuthFolder"
 	mainTable.AuthFolder = AuthFolder
 	Shared.Parent = Folder
+	local TNetServer = TNet.new()
+
 	--script.Client:Clone().Parent = script.RudimentaryClient
 	--script.Sounds:Clone().Parent = script.RudimentaryClient
 	for index, item in pairs (Config.GroupConfig) do
@@ -1179,8 +1186,13 @@ local function setupAdmin(Config, Requirer)
 	_G.RudimentaryStarted = true
 	warn(string.format("Rudimentary Started In %s Second(s)", tick() - Start))
 
+	local RemoteEventHandler = TNetServer:HandleRemoteEvent(RE)
+
+	RemoteEventHandler.Middleware = {
+		RequestsPerMinute = 100
+	}
 	
-	RE.OnServerEvent:Connect(function(plr, req, ...)
+	RemoteEventHandler:Connect(function(plr, req, ...)
 		local Data = {...}
 		if req == "execute" then
 			executeCommand(plr, Data[1])		

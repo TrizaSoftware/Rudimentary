@@ -17,7 +17,7 @@
 
 local RudimentaryFolder = game.ReplicatedStorage:WaitForChild("Rudimentary")
 local SharedModules = RudimentaryFolder:WaitForChild("Shared")
-local Signal = require(SharedModules.Signal)
+local Signal = require(SharedModules.BetterSignal)
 local Dragger = {}
 local _warn = warn
 local function warn(...)

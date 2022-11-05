@@ -19,7 +19,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RudimentaryFolder = ReplicatedStorage:WaitForChild("Rudimentary")
 local SharedModules = RudimentaryFolder:WaitForChild("Shared")
 local Utils = require(SharedModules.Utils)
-local Signal = require(SharedModules.Signal)
+local Signal = require(SharedModules.BetterSignal)
 local TweenService = game:GetService("TweenService")
 local _warn = warn
 local function warn(...)

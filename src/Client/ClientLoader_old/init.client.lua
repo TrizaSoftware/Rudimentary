@@ -25,7 +25,7 @@ local LockedPanels = {
 
 }
 
-local Signal = require(SharedAssets:WaitForChild("Signal"))
+local Signal = require(SharedAssets:WaitForChild("BetterSignal"))
 local Sounds = script:WaitForChild("Sounds")
 local Utils = require(SharedAssets.Utils)
 local UserAvatar = Players:GetUserThumbnailAsync(Plr.UserId, Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size420x420)
