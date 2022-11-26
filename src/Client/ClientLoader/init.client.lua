@@ -33,6 +33,8 @@ local Dependencies = script:WaitForChild("Dependencies")
 local Sounds = script:WaitForChild("Sounds")
 local TNet = require(Shared.TNet)
 local TNetClient = TNet.new()
+local RemoteEventHandler = TNetClient:HandleRemoteEvent(RemoteEvent)
+local RemoteFunctionHandler = TNetClient:HandleRemoteFunction(RemoteFunction)
 local Fader = require(Dependencies.Fader)
 local Dragger = require(Dependencies.Dragger)
 local Functions = require(Dependencies.Functions)
@@ -220,13 +222,12 @@ end)
 
 TestService:Message(string.format("Rudimentary Client Initialized in %s second(s)", tick() - Start))
 
-RemoteEvent.OnClientEvent:Connect(function(req, ...)
+RemoteEventHandler:Connect(function(req, ...)
   local Data = {...}
   if req == "changeKey" then
     Key = Data[1]
   elseif req == "checkKeyValidity" then
-    local RemoteName = Data[1]
-    RudimentaryFolder:WaitForChild(RemoteName):FireServer(Key)
+    RemoteEventHandler:Fire("completeAuthRequest", Key)
   elseif Functions[req] then
       local suc, err = pcall(Functions[req], Client, ...)
       if not suc then
@@ -236,5 +237,5 @@ RemoteEvent.OnClientEvent:Connect(function(req, ...)
 end)
 
 LogService.MessageOut:Connect(function(message)
-	RemoteEvent:FireServer("sendClientLog", message, Key)
+  RemoteEventHandler:Fire("sendClientLog", message, Key)
 end)

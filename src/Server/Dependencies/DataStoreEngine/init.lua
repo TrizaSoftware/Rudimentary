@@ -5,13 +5,15 @@ local Dependencies = script:WaitForChild("Dependencies")
 local MockDataStoreService = require(Dependencies.MockDataStoreService)
 local TaskManager = require(Dependencies.DataStoreTaskManager)
 
-local suc = pcall(function()
-  DataStoreService:GetDataStore("__DataStoreEngine__Test"):SetAsync("__Test__", true)
-end)
+task.spawn(function()
+  local suc = pcall(function()
+    DataStoreService:GetDataStore("__DataStoreEngine__Test"):SetAsync("__Test__", true)
+  end)
 
-if not suc then
-  DataStoreService = MockDataStoreService
-end
+  if not suc then
+    DataStoreService = MockDataStoreService
+  end
+end)
 
 local DataStores = {}
 local DataStoreEngine = {}
@@ -66,5 +68,9 @@ function DataStoreEngine:GetAsync(key)
 end
 
 DataStoreEngine.GetData = DataStoreEngine.GetAsync
+
+function DataStoreEngine:GetDataStore(name: string)
+  return DataStores[name]
+end
 
 return DataStoreEngine

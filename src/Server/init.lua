@@ -29,9 +29,11 @@ local Assets = script.Parent:WaitForChild("Assets")
 local TNet = require(Shared.TNet)
 local Utils = require(Shared.Utils)
 local Signal = require(Shared.BetterSignal)
+local KeyModule = require(Shared.Key)
 local Dependencies = script.Dependencies
 local DataStoreEngine = require(Dependencies.DataStoreEngine)
 local ServerFunctions = require(Dependencies.Functions)
+local AuthRequest = require(Dependencies.AuthRequest)
 local _warn = warn
 local function warn(...)
 	_warn("[Rudimentary]:",...)
@@ -126,9 +128,13 @@ local OptionsForSettings = {
 	Theme = {}
 }
 
+local AuthRequests = {
+
+}
+
 local function checkHTTPService()
 	local suc = pcall(function()
-		HttpService:GetAsync("https://google.com")
+		HttpService:GetAsync("https://infra.triza.dev/api/v1/checkuptime")
 	end)
 	return suc
 end
@@ -240,12 +246,12 @@ APIFunctions = {
 				mainTable.RemoteEvent:FireClient(player, "changeData", "AdminLevel", AdminLevel)
 				if AdminLevel > 0 then
 					mainTable.RemoteEvent:FireClient(player, "displayNotification", {
-						Type = "Alert", 
-						Text = string.format("You're a(n) %s!", mainTable.AdminLevels[mainTable.Admins[player.UserId]]), 
-						SecondaryText = "Click for Commands", 
+						Type = "Alert",
+						Text = string.format("You're a(n) %s!", mainTable.AdminLevels[mainTable.Admins[player.UserId]]),
+						SecondaryText = "Click for Commands",
 						ExtraData = {
-							MethodAfterClick = "getCommands", 
-							InstanceToCreate = "List", 
+							MethodAfterClick = "getCommands",
+							InstanceToCreate = "List",
 							InstanceData = {
 								Title = "Commands"
 							}
@@ -296,8 +302,8 @@ APIFunctions = {
 		if request == "removeBan" then
 			local UserId = Data[1]
 			for i, card in mainTable.TrelloCards.Ban do
-				local Data = card.name:split(":")
-				local uid = tonumber(Data[2])
+				local CardData = card.name:split(":")
+				local uid = tonumber(CardData[2])
 				if uid == UserId then
 					APIFunctions.makeHTTPRequest(
 						string.format("https://api.trello.com/1/cards/%s?key=%s&token=%s", card.id, AppKey, Token),
@@ -355,7 +361,7 @@ APIFunctions = {
 	end,
 	["addDebugLog"] = function(message: string)
 		assert(typeof(message) == "string", "A Debug Log must be a string.")
-		table.insert(mainTable.DebugLogs, mess)
+		table.insert(mainTable.DebugLogs, message)
 	end,
 	["CSM"] = {
 		["dispatchMessageToServers"] = function(message)
@@ -475,12 +481,12 @@ local function getAdminLevel(permissionsTable, player:Player)
 	if suc then
 		return adminLevel
 	else
-		task.wait(0.2)
+		task.wait(2)
 		if not Players:FindFirstChild(player.Name) then
 			return 0
 		end
-		warn(err)
-		warn(string.format("An Error Occurred While Fetching Admin Level For %s, Retrying.", player.Name))
+		--warn(err)
+		--warn(string.format("An Error Occurred While Fetching Admin Level For %s, Retrying.", player.Name))
 		return getAdminLevel(permissionsTable, player)
 	end
 end
@@ -673,7 +679,6 @@ end
 
 local function manageKeys(player)
 	mainTable.Keys[player.UserId] = {}
-	local KeyModule = require(Shared.Key)
 	local FirstKey = KeyModule(100)
 	mainTable.RemoteEvent:FireClient(player, "changeKey", FirstKey)
 	table.insert(mainTable.Keys[player.UserId], FirstKey)
@@ -693,11 +698,18 @@ local function manageKeys(player)
 			end
 			]]
 		--OldKey = Key
-		local Remote = Instance.new("RemoteEvent", ReplicatedStorage:WaitForChild("Rudimentary"))
-		local RemoteName = KeyModule(100)
-		Remote.Name = RemoteName
-		mainTable.RemoteEvent:FireClient(player, "checkKeyValidity", RemoteName)
-		local Responded = false
+		--local Remote = Instance.new("RemoteEvent", ReplicatedStorage:WaitForChild("Rudimentary"))
+		--local RemoteName = KeyModule(100)
+		--Remote.Name = RemoteName
+		mainTable.RemoteEvent:FireClient(player, "checkKeyValidity")
+		local Request = AuthRequest.new(player)
+		table.insert(AuthRequests, Request)
+
+		local SentKey
+		local Connection = Request.KeySend:Connect(function(player, key)
+			SentKey = key
+		end)
+		--[[
 		local Connection = Remote.OnServerEvent:Connect(function(respondingplr, key)
 			if respondingplr == player then
 				if checkValidKey(respondingplr, key) then
@@ -715,10 +727,19 @@ local function manageKeys(player)
 				end
 			end
 		end)
+		]]
 		local Start = tick()
-		repeat task.wait() until Responded or tick() - Start >= 15 
+		repeat task.wait() until SentKey or tick() - Start >= 15
+		task.spawn(function()
+			pcall(function()
+				task.wait(2)
+				if mainTable.Keys[player.UserId] then
+					table.remove(mainTable.Keys[player.UserId], table.find(mainTable.Keys[player.UserId]))
+				end
+			end)
+		end)
 		Connection:Disconnect()
-		Remote:Destroy()
+		--Remote:Destroy()
 		if tick() - Start >= 15 then
 			--APIFunctions.removePlayerFromServer(player, "Client Failed To Respond To Rudimentary Key Management System")
 			mainTable.Keys[player] = {}
@@ -822,7 +843,7 @@ local function handlePlayer(player)
 		elseif not mainTable.Admins[player.UserId] then
 			mainTable.Admins[player.UserId] = adminLevel
 		end
-		warn(string.format("Admin Level For %s Is: %s", player.Name, mainTable.Admins[player.UserId]))
+		--warn(string.format("Admin Level For %s Is: %s", player.Name, mainTable.Admins[player.UserId]))
 		if adminLevel <= 0 and mainTable.ServerLocked then
 			APIFunctions.removePlayerFromServer(player, "This Server Is Locked.")
 		end
@@ -1187,6 +1208,7 @@ local function setupAdmin(Config, Requirer)
 	warn(string.format("Rudimentary Started In %s Second(s)", tick() - Start))
 
 	local RemoteEventHandler = TNetServer:HandleRemoteEvent(RE)
+	local RemoteFunctionHandler = TNetServer:HandleRemoteEvent(RF)
 
 	RemoteEventHandler.Middleware = {
 		RequestsPerMinute = 100
@@ -1205,11 +1227,17 @@ local function setupAdmin(Config, Requirer)
 			if checkValidKey(plr, Key) then
 				table.insert(mainTable.ClientLogs[plr.UserId], 1, string.format("[{time:%s:ampm}] %s", os.time(), Data[1]))
 			end
+		elseif req == "completeAuthRequest" then
+			for _, authRequest in AuthRequests do
+				if authRequest.Player == plr then
+					authRequest.KeySend:Fire(Data[1])
+				end
+			end
 		end
 	end)
 	
 	
-	RF.OnServerInvoke = function(plr, req, ...)
+	RemoteFunctionHandler:Connect(function(plr, req, ...)
 		local Data = {...}
 		if req == "fetchData" then
 			local ClonedTable = makeEnv()
@@ -1362,7 +1390,7 @@ local function setupAdmin(Config, Requirer)
 			local suc, res = pcall(ServerFunctions[req], plr, makeEnv(), ...)
 			if suc then return res else warn(string.format("An Error Occurred While Running A Server Function\nFunction: %s\nError: %s", req, res)) return "Error" end
 		end
-	end
+	end)
 end
 
 return setupAdmin

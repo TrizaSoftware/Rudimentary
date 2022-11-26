@@ -59,6 +59,7 @@
 local luaK = {}
 local luaP = require(script.Parent.LuaP)
 local luaX = require(script.Parent.LuaX)
+local luaY
 
 ------------------------------------------------------------------------
 -- constants used by code generator
