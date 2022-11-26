@@ -121,7 +121,11 @@ function NetSignal:HandleInboundRequest(...)
   if self.Middleware and self.Middleware.Inbound then
     for _, func in self.Middleware.Inbound do
       if RunService:IsServer() then
-        task.spawn(func, player, self.Event, {...})
+        local ArgsNoPlayer = {}
+        for i = 2,#Data do
+          table.insert(ArgsNoPlayer, Data[i])
+        end
+        task.spawn(func, player, self.Event, table.unpack(ArgsNoPlayer))
       else
         task.spawn(func, self.Event, {...})
       end
@@ -130,11 +134,7 @@ function NetSignal:HandleInboundRequest(...)
   RunService.Stepped:Wait()
   for _, connection in self.Connections do
     if connection.Function then
-      if RunService:IsServer() then
-        return connection.Function(player, ...)
-      else
-        return connection.Function(...)
-      end
+      return connection.Function(...)
     else
       table.remove(self.Connections, table.find(self.Connections, connection))
     end
