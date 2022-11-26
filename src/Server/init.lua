@@ -33,7 +33,10 @@ local KeyModule = require(Shared.Key)
 local Dependencies = script.Dependencies
 local DataStoreEngine = require(Dependencies.DataStoreEngine)
 local ServerFunctions = require(Dependencies.Functions)
-local AuthRequest = require(Dependencies.AuthRequest)
+local AuthRequest
+task.spawn(function()
+	AuthRequest = require(Dependencies.AuthRequest)
+end)
 local _warn = warn
 local function warn(...)
 	_warn("[Rudimentary]:",...)
@@ -706,7 +709,7 @@ local function manageKeys(player)
 		table.insert(AuthRequests, Request)
 
 		local SentKey
-		local Connection = Request.KeySend:Connect(function(player, key)
+		local Connection = Request.KeySend:Connect(function(key)
 			SentKey = key
 		end)
 		--[[
@@ -730,11 +733,15 @@ local function manageKeys(player)
 		]]
 		local Start = tick()
 		repeat task.wait() until SentKey or tick() - Start >= 15
+		if not checkValidKey(player, SentKey) then
+			mainTable.Keys[player] = {}
+			return
+		end
 		task.spawn(function()
 			pcall(function()
 				task.wait(2)
 				if mainTable.Keys[player.UserId] then
-					table.remove(mainTable.Keys[player.UserId], table.find(mainTable.Keys[player.UserId]))
+					table.remove(mainTable.Keys[player.UserId], table.find(mainTable.Keys[player.UserId], SentKey))
 				end
 			end)
 		end)
@@ -891,14 +898,9 @@ local function setupAdmin(Config, Requirer)
 	if Requirer.Parent ~= ServerScriptService then
 		if Requirer.Parent:IsA("Model") then
 			local oldParent = Requirer.Parent
-			Requirer.Parent = ServerScriptService
 			oldParent:Destroy()
 		end
-	end
-	for _, item in Assets:GetChildren() do
-		if item:IsA("Script") or item:IsA("LocalScript") then
-			item.Disabled = true
-		end
+		Requirer.Parent = ServerScriptService
 	end
 	local Start = tick()
 	script.Parent.Client.ClientLoader:Clone().Parent = game.StarterPlayer.StarterPlayerScripts
@@ -933,6 +935,7 @@ local function setupAdmin(Config, Requirer)
 
 	for _, player:Player in Players:GetPlayers() do
 		task.spawn(function()
+			repeat task.wait() until _G.RudimentaryStarted
 			task.wait(if RunService:IsStudio() then 0 else 10)
 			if not StartedClients[player] then
 				handlePlayer(player)
@@ -1208,7 +1211,7 @@ local function setupAdmin(Config, Requirer)
 	warn(string.format("Rudimentary Started In %s Second(s)", tick() - Start))
 
 	local RemoteEventHandler = TNetServer:HandleRemoteEvent(RE)
-	local RemoteFunctionHandler = TNetServer:HandleRemoteEvent(RF)
+	local RemoteFunctionHandler = TNetServer:HandleRemoteFunction(RF)
 
 	RemoteEventHandler.Middleware = {
 		RequestsPerMinute = 100
