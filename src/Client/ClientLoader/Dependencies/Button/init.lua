@@ -22,6 +22,9 @@ local Properties = {
         if not self.TextColor then
             self.ButtonText.TextColor3 = color
         end
+        if not self.TextColor then
+            self.IconImage.ImageColor3 = color
+        end
         if self.Button:FindFirstChildWhichIsA("UIStroke") then
             self.Button.UIStroke.Color = color
         end
@@ -30,10 +33,21 @@ local Properties = {
     ["TextColor"] = function(self, color)
         assert(typeof(color) == "Color3", "TextColor must be a valid Color3 value.")
         self.ButtonText.TextColor3 = color
+        self.IconImage.ImageColor3 = color
         self:setValue("TextColor", color)
     end,
 	["Icon"] = function(self, iconName:string)
+        if iconName == nil then
+            self.IconImage.Visible = false
+            self.ButtonText.Size = UDim2.new(1, 0,1, 0)
+            self.ButtonText.Position = UDim2.new(0,0,0,0)
+            return
+        end
         assert(Icons[iconName], string.format("%s isn't a valid icon.", iconName))
+        self.IconImage.Image = string.format("rbxassetid://%s", Icons[iconName])
+        self.IconImage.Visible = true
+        self.ButtonText.Size = UDim2.new(0.75, 0,1, 0)
+        self.ButtonText.Position = UDim2.new(0.25,0,0,0)
 	end,
     ["Style"] = function(self, style)
         assert(table.find(ValidStyles, style), string.format("%s isn't a valid StyleType.", style))
@@ -104,6 +118,14 @@ function Button.new(Clnt)
         Parent = self.Button,
         TextScaled = true,
         Size = UDim2.new(1,0,1,0)
+    }))
+    rawset(self, "IconImage", Ruact.new("ImageLabel", {
+        BackgroundTransparency = 1,
+        Parent = self.Button,
+        Size = UDim2.new(0.2,0,1,0),
+        Position = UDim2.new(0.05,0,0,0),
+        ScaleType = Enum.ScaleType.Fit,
+        Visible = false
     }))
     rawset(self, "Clicked", Signal.new())
     Ruact.new("UITextSizeConstraint", {

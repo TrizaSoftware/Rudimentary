@@ -425,6 +425,16 @@ local function getTrelloData()
 	end
 end
 
+local function getLatestVersion()
+	if mainTable.HttpService then
+		local Information = HttpService:JSONDecode(APIFunctions.makeHTTPRequest("https://api.github.com/repos/TrizaCorporation/Rudimentary/releases/latest").Body)
+		if mainTable.LatestVersion ~= Information.tag_name then
+			mainTable.RemoteEvent:FireAllClients("changeData", "LatestVersion", Information.tag_name)
+		end
+		mainTable.LatestVersion = Information.tag_name
+	end
+end
+
 local function makeSettingsData()
 	local Data = {}
 	for setting, val in Settings do
@@ -854,22 +864,25 @@ local function handlePlayer(player)
 		if adminLevel <= 0 and mainTable.ServerLocked then
 			APIFunctions.removePlayerFromServer(player, "This Server Is Locked.")
 		end
-		if adminLevel >= 1 then
-			mainTable.RemoteEvent:FireClient(player, "displayNotification", {Type = "Alert", Text = string.format("You're a(n) %s!", mainTable.AdminLevels[mainTable.Admins[player.UserId]]), SecondaryText = "Click for Commands", ExtraData = {MethodAfterClick = "getCommands", InstanceToCreate = "List", InstanceData = {Title = "Commands"}}})
-			mainTable.RemoteEvent:FireAllClients("changeData", "InGameAdmins", getAdminsInGame())
-		end
-		if not table.find(mainTable.Donors, player.UserId) and MarketPlaceService:PlayerOwnsAsset(player, mainTable.DonorShirt) then
-			mainTable.RemoteEvent:FireClient(player, "displayNotification", {
-				Type = "Info", 
-				Title = "Donor Perks",
-				Text = "You're A Donor", 
-				SecondaryText = "Click to open the panel",
-				ExtraData = {
-					ClientFunctionToRun = "MakeDonorPanel", 
-				}
-			})
-			table.insert(mainTable.Donors, player.UserId)
-		end
+		task.spawn(function()
+			task.wait(0.5)
+			if adminLevel >= 1 then
+				mainTable.RemoteEvent:FireClient(player, "displayNotification", {Type = "Alert", Text = string.format("You're a(n) %s!", mainTable.AdminLevels[mainTable.Admins[player.UserId]]), SecondaryText = "Click for Commands", ExtraData = {MethodAfterClick = "getCommands", InstanceToCreate = "List", InstanceData = {Title = "Commands"}}})
+				mainTable.RemoteEvent:FireAllClients("changeData", "InGameAdmins", getAdminsInGame())
+			end
+			if not table.find(mainTable.Donors, player.UserId) and MarketPlaceService:PlayerOwnsAsset(player, mainTable.DonorShirt) then
+				mainTable.RemoteEvent:FireClient(player, "displayNotification", {
+					Type = "Info", 
+					Title = "Donor Perks",
+					Text = "You're A Donor", 
+					SecondaryText = "Click to open the panel",
+					ExtraData = {
+						ClientFunctionToRun = "MakeDonorPanel", 
+					}
+				})
+				table.insert(mainTable.Donors, player.UserId)
+			end
+		end)
 		player.Chatted:Connect(function(msg)
 			table.insert(mainTable.ChatLogs, 1, string.format("[{time:%s:ampm}] %s: %s", os.time(), player.Name, Chat:FilterStringForBroadcast(msg, player)))
 			executeCommand(player, msg)
@@ -1071,6 +1084,7 @@ local function setupAdmin(Config, Requirer)
 	task.spawn(function()
 		while true do
 			getTrelloData()
+			getLatestVersion()
 			task.wait(60)
 		end
 	end)

@@ -125,5 +125,7 @@ return { --// Decal IDs
 	Key = 7541891753,
 	Warning = 7514715386,
 	Widgets = 7541897766,
-	Close = 11230026832
+	Close = 11230026832,
+	Map = 11672205712,
+	Calendar = 11672524064
 }

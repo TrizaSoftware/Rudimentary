@@ -2,7 +2,7 @@ local Player = game.Players.LocalPlayer
 
 local FaderModule = require(script.Parent.Fader)
 local DraggerModule = require(script.Parent.Dragger)
-local Snackbar = require(script.Parent.Snackbar)
+--local Snackbar = require(script.Parent.Snackbar)
 
 local Functions = nil
 Functions = {
@@ -608,7 +608,7 @@ Functions = {
 				if Clicked then return end
 				Clicked = true
 				if PrivateMessageData.Sender ~= "Server" and PrivateMessageData.Sender ~= nil then
-					local Response = Client.RemoteFunction:InvokeServer("sendPrivateMessage", PrivateMessageData.Sender, Message, Client:GetKey())
+					local Response = Client.RemoteFunction:InvokeServer("sendPrivateMessage", PrivateMessageData.Sender, Message, Client.API:GetKey())
 					if typeof(Response) == "boolean" then
 						if Response == true then
 							Functions.showHint(Client, {Title = "Success", Text = "Successfully Sent Message."})	

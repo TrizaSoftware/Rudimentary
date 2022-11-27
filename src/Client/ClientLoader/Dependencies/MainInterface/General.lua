@@ -45,12 +45,27 @@ return function (Client)
   ServerUptimePanel.Parent = GameInfoCategory.ScrollingFrame
   ServerUptimePanel.Visible = true
 
+  local ServerRegionPanel = CategoryItemTemplate:Clone()
+  ServerRegionPanel.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Map)
+  ServerRegionPanel.CategoryItemName.Text = "Server Region"
+  ServerRegionPanel.Value.Text = Client.Data.ServerRegion
+  ServerRegionPanel.Parent = GameInfoCategory.ScrollingFrame
+  ServerRegionPanel.Visible = true
+
   local ServerPlayersPanel = CategoryItemTemplate:Clone()
   ServerPlayersPanel.Icon.Image = string.format("rbxassetid://%s", Client.Icons.People)
   ServerPlayersPanel.CategoryItemName.Text = "Players In Server"
   ServerPlayersPanel.Value.Text = #Players:GetPlayers()
   ServerPlayersPanel.Parent = GameInfoCategory.ScrollingFrame
   ServerPlayersPanel.Visible = true
+
+  local ServerAdminsPanel = CategoryItemTemplate:Clone()
+  ServerAdminsPanel.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Admin_panel_settings)
+  ServerAdminsPanel.CategoryItemName.Text = "Admins In Server"
+  ServerAdminsPanel.Value.Text = Client.Data.InGameAdmins
+  ServerAdminsPanel.Parent = GameInfoCategory.ScrollingFrame
+  ServerAdminsPanel.Visible = true
+
 
   task.spawn(function()
     while task.wait() do
@@ -64,6 +79,33 @@ return function (Client)
 
   Players.ChildRemoved:Connect(function()
     ServerPlayersPanel.Value.Text = #Players:GetPlayers()
+  end)
+
+  local SystemInfoCategory = CategoryTemplate:Clone()
+  SystemInfoCategory.CategoryName.Text = "System Info"
+  SystemInfoCategory.Parent = Client.Panel.General.ScrollingFrame
+  SystemInfoCategory.Visible = true
+
+  local SystemVersionPanel = CategoryItemTemplate:Clone()
+  SystemVersionPanel.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Verified)
+  SystemVersionPanel.CategoryItemName.Text = "Version"
+  SystemVersionPanel.Value.Text = Client.Data.Version
+  SystemVersionPanel.Parent = SystemInfoCategory.ScrollingFrame
+  SystemVersionPanel.Visible = true
+
+  local LatestVersionPanel = CategoryItemTemplate:Clone()
+  LatestVersionPanel.Icon.Image = string.format("rbxassetid://%s", Client.Icons.Calendar)
+  LatestVersionPanel.CategoryItemName.Text = "Latest Version"
+  LatestVersionPanel.Value.Text = Client.Data.LatestVersion
+  LatestVersionPanel.Parent = SystemInfoCategory.ScrollingFrame
+  LatestVersionPanel.Visible = true
+
+  Client.API.ListenForEvent("changeData", function(settingName, newValue)
+    if settingName == "InGameAdmins" then
+      ServerAdminsPanel.Value.Text = newValue
+    elseif settingName == "LatestVersion" then
+      LatestVersionPanel.Value.Text = newValue
+    end
   end)
 
   local thumbnail = Players:GetUserThumbnailAsync(Player.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)

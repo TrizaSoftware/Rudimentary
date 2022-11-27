@@ -35,11 +35,19 @@ local TNet = require(Shared.TNet)
 local TNetClient = TNet.new()
 local RemoteEventHandler = TNetClient:HandleRemoteEvent(RemoteEvent)
 local RemoteFunctionHandler = TNetClient:HandleRemoteFunction(RemoteFunction)
+local EventListenerCreator
+task.spawn(function()
+  EventListenerCreator = require(Dependencies.EventListener)
+end)
 local Fader = require(Dependencies.Fader)
 local Dragger = require(Dependencies.Dragger)
 local Functions = require(Dependencies.Functions)
 local Key = nil
-local Client = {UI = {}}
+local Client = {API = {}, UI = {}}
+local DisallowedEventListeners = {
+  "changeKey",
+  "checkKeyValidity"
+}
 
 -- REDEFINE WARN
 
@@ -48,16 +56,7 @@ local function warn(...)
   _warn("[Rudimentary Client]:",...)
 end
 
--- CLIENT TABLE SETUP
-
-function Client:GetKey()
- local checkString = string.format("Players.%s.PlayerGui.RudimentaryUi.ClientLoader", Player.Name)
- local information = debug.traceback():split("GetKey")[2]
- information = information:sub(2,information:len())
- if checkString == information:sub(1,checkString:len()) then
-  return Key
- end
-end
+-- CLIENT UI FUNCTIONS
 
 function Client.UI:GetFolderForElement(element:string)
   return if Client.MainInterface.Assets[Client.Theme]:FindFirstChild(element) then Client.MainInterface.Assets[Client.Theme] else Client.MainInterface.Assets.Default
@@ -73,8 +72,33 @@ function Client.UI.Make(element, ...)
   end
 end
 
+-- HANDLE CLIENT API
+
+function Client.API.ListenForEvent(event: string, callback)
+  assert(not table.find(DisallowedEventListeners, event), string.format("Can't listen to event %s", event))
+  local EventListener = EventListenerCreator.new(callback)
+  if not Client.EventListeners[event] then
+    Client.EventListeners[event] = {}
+  end
+  table.insert(Client.EventListeners[event], EventListener)
+end
+
+function Client.API:GetKey()
+  local checkString = string.format("Players.%s.PlayerScripts.ClientLoader", Player.Name)
+  local information = debug.traceback():split("GetKey")[2]
+  information = information:sub(2,information:len())
+  if checkString == information:sub(1,checkString:len()) then
+   return Key
+  end
+ end
+
+table.freeze(Client.API)
+
+-- SET CLIENT VARIABLES
+
 Client.MainInterface = Player.PlayerGui:WaitForChild("RudimentaryUi")
 Client.Theme = ClientData.Theme
+Client.EventListeners = {}
 Client.MainInterfaceHandlers = {}
 Client.MainInterfaceFaders = {}
 Client.Panel = Client.UI:GetFolderForElement("Panel").Panel:Clone()
@@ -90,6 +114,8 @@ Client.Shared = Shared
 Client.Utils = Utils
 Client.Sounds = Sounds
 Client.Icons = require(Dependencies.MaterialIcons)
+
+_G.RudimentaryClient = Client
 
 -- INTIALIZE INTERFACES
 
@@ -151,7 +177,9 @@ end)
 
 for _, module in Dependencies.MainInterface:GetChildren() do
   if module:IsA("ModuleScript") and Client.Panel:FindFirstChild(module.Name) then
-    Client.MainInterfaceHandlers[module.Name] = require(module)(Client)
+    pcall(function()
+      Client.MainInterfaceHandlers[module.Name] = require(module)(Client)
+    end)
   end
 end
 
@@ -224,10 +252,20 @@ TestService:Message(string.format("Rudimentary Client Initialized in %s second(s
 
 RemoteEventHandler:Connect(function(req, ...)
   local Data = {...}
+  if Client.EventListeners[req] then
+    for _, listener in Client.EventListeners[req] do
+      assert(not table.find(DisallowedEventListeners, req), string.format("Can't listen to event %s", req))
+      task.spawn(listener.Callback, ...)
+    end
+  end
   if req == "changeKey" then
     Key = Data[1]
   elseif req == "checkKeyValidity" then
     RemoteEventHandler:Fire("completeAuthRequest", Key)
+  elseif req == "changeData" then
+    local Index = Data[1]
+    local Value = Data[2]
+    Client.Data[Index] = Value
   elseif Functions[req] then
       local suc, err = pcall(Functions[req], Client, ...)
       if not suc then
