@@ -69,7 +69,7 @@ end
 function NetSignalEvent:FireAllClients(...)
   assert(RunService:IsServer(), "FireAllClients can only be called on the server.")
   self:HandleOutboundRequest(Players:GetPlayers(), ...)
-  self.Event:FireAllClients(Players:GetPlayers(), ...)
+  self.Event:FireAllClients(...)
 end
 
 function NetSignalEvent:FireToGroup(group, ...)
