@@ -95,12 +95,12 @@ function configureAnimationSet(name, fileList)
 	local config = script:FindFirstChild(name)
 	if (config ~= nil) then
 --		print("Loading anims " .. name)
-		table.insert(animTable[name].connections, config.ChildAdded:connect(function(child) configureAnimationSet(name, fileList) end))
-		table.insert(animTable[name].connections, config.ChildRemoved:connect(function(child) configureAnimationSet(name, fileList) end))
+		table.insert(animTable[name].connections, config.ChildAdded:Connect(function(child) configureAnimationSet(name, fileList) end))
+		table.insert(animTable[name].connections, config.ChildRemoved:Connect(function(child) configureAnimationSet(name, fileList) end))
 		local idx = 1
 		for _, childPart in pairs(config:GetChildren()) do
 			if (childPart:IsA("Animation")) then
-				table.insert(animTable[name].connections, childPart.Changed:connect(function(property) configureAnimationSet(name, fileList) end))
+				table.insert(animTable[name].connections, childPart.Changed:Connect(function(property) configureAnimationSet(name, fileList) end))
 				animTable[name][idx] = {}
 				animTable[name][idx].anim = childPart
 				local weightObject = childPart:FindFirstChild("Weight")
@@ -140,8 +140,8 @@ function scriptChildModified(child)
 	end	
 end
 
-script.ChildAdded:connect(scriptChildModified)
-script.ChildRemoved:connect(scriptChildModified)
+script.ChildAdded:Connect(scriptChildModified)
+script.ChildRemoved:Connect(scriptChildModified)
 
 -- Clear any existing animation tracks
 -- Fixes issue with characters that are moved in and out of the Workspace accumulating tracks
@@ -254,7 +254,7 @@ function playAnimation(animName, transitionTime, humanoid)
 		if (currentAnimKeyframeHandler ~= nil) then
 			currentAnimKeyframeHandler:disconnect()
 		end
-		currentAnimKeyframeHandler = currentAnimTrack.KeyframeReached:connect(keyFrameReachedFunc)
+		currentAnimKeyframeHandler = currentAnimTrack.KeyframeReached:Connect(keyFrameReachedFunc)
 		
 	end
 
@@ -307,7 +307,7 @@ function playToolAnimation(animName, transitionTime, humanoid, priority)
 			toolAnimName = animName
 			toolAnimInstance = anim
 
-			currentToolAnimKeyframeHandler = toolAnimTrack.KeyframeReached:connect(toolKeyFrameReachedFunc)
+			currentToolAnimKeyframeHandler = toolAnimTrack.KeyframeReached:Connect(toolKeyFrameReachedFunc)
 		end
 end
 
@@ -506,19 +506,19 @@ function move(time)
 end
 
 -- connect events
-Humanoid.Died:connect(onDied)
-Humanoid.Running:connect(onRunning)
-Humanoid.Jumping:connect(onJumping)
-Humanoid.Climbing:connect(onClimbing)
-Humanoid.GettingUp:connect(onGettingUp)
-Humanoid.FreeFalling:connect(onFreeFall)
-Humanoid.FallingDown:connect(onFallingDown)
-Humanoid.Seated:connect(onSeated)
-Humanoid.PlatformStanding:connect(onPlatformStanding)
-Humanoid.Swimming:connect(onSwimming)
+Humanoid.Died:Connect(onDied)
+Humanoid.Running:Connect(onRunning)
+Humanoid.Jumping:Connect(onJumping)
+Humanoid.Climbing:Connect(onClimbing)
+Humanoid.GettingUp:Connect(onGettingUp)
+Humanoid.FreeFalling:Connect(onFreeFall)
+Humanoid.FallingDown:Connect(onFallingDown)
+Humanoid.Seated:Connect(onSeated)
+Humanoid.PlatformStanding:Connect(onPlatformStanding)
+Humanoid.Swimming:Connect(onSwimming)
 
 -- setup emote chat hook
-game:GetService("Players").LocalPlayer.Chatted:connect(function(msg)
+game:GetService("Players").LocalPlayer.Chatted:Connect(function(msg)
 	local emote = ""
 	if msg == "/e dance" then
 		emote = dances[math.random(1, #dances)]

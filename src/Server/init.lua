@@ -855,9 +855,7 @@ local function handlePlayer(player)
 		end
 		mainTable.ClientLogs[player.UserId] = {}
 		local adminLevel = getAdminLevel(mainTable.GroupConfig, player)
-		if mainTable.Admins[player.UserId] and adminLevel > mainTable.Admins[player.UserId] then
-			mainTable.Admins[player.UserId] = adminLevel
-		elseif not mainTable.Admins[player.UserId] then
+		if (mainTable.Admins[player.UserId] and adminLevel > mainTable.Admins[player.UserId]) or not mainTable.Admins[player.UserId] then
 			mainTable.Admins[player.UserId] = adminLevel
 		end
 		--warn(string.format("Admin Level For %s Is: %s", player.Name, mainTable.Admins[player.UserId]))

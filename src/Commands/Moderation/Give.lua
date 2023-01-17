@@ -24,9 +24,7 @@ Command.Handler = function(env, plr, args)
 			for _, item in env.ToolStorage:GetDescendants() do
 				if item:IsA("Tool") then
 					for _, tn in PotentialToolNames do
-						if tn:lower() == "all" then
-							table.insert(Tools, item)
-						elseif item.Name:lower():sub(1,tn:len()) == tn:lower() then
+						if tn:lower() == "all" or (item.Name:lower():sub(1,tn:len()) == tn:lower()) then
 							table.insert(Tools, item)
 						end
 					end

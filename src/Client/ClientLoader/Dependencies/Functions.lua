@@ -625,7 +625,7 @@ Functions = {
 					PMClone:Destroy()
 				end)
 			else
-				Snackbar.new("error", "You can't send an empty message.")
+				--Snackbar.new("error", "You can't send an empty message.")
 			end
 		end)
 		PMFader:fadeOut()

@@ -23,7 +23,7 @@ local Speed = 5
 function getCF(part, isFor)
 	local cframe = part.CFrame
 	local noRot = CFrame.new(cframe.p)
-	local x, y, z = (workspace.CurrentCamera.CoordinateFrame - workspace.CurrentCamera.CoordinateFrame.p):toEulerAnglesXYZ()
+	local x, y, z = (workspace.CurrentCamera.CFrame - workspace.CurrentCamera.CFrame.Position):toEulerAnglesXYZ()
 	return noRot * CFrame.Angles(isFor and z or x, y, z)
 end
 
