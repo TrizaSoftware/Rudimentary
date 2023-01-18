@@ -106,7 +106,7 @@ end
 
 function Fader:fadeOut(seconds:number)
 	assert(self ~= nil, "This method can only be called in an active Fader Instance.")
-	local ClonedTable = Utils.CloneTable(self.Items)
+	local ClonedTable = Utils.CloneTableDeep(self.Items)
 	seconds = seconds or 0
 	for object,properties in pairs(ClonedTable) do
 		for property, _ in pairs(properties) do

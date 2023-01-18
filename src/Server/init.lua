@@ -526,7 +526,7 @@ local function makeEnv()
 		for _, term in BlacklistedSettingsTerms do
 			if index:find(term) then
 				hasblacklistedterms = true
-			end 
+			end
 		end
 		if not hasblacklistedterms then
 			env[index] = value
@@ -1092,7 +1092,7 @@ local function setupAdmin(Config, Requirer)
 		if Command:IsA("ModuleScript") then
 			local suc, err = pcall(function()
 				if not table.find(Settings.DisabledCommandTypes, Command.Parent.Name) then
-					local CommandData = Utils.CloneTable(require(Command))
+					local CommandData = Utils.CloneTableDeep(require(Command))
 					CommandData.Type = Command.Parent.Name
 					mainTable.Commands[CommandData.Name] = CommandData
 					for _, Alias in pairs(CommandData.Aliases or {}) do
@@ -1139,14 +1139,14 @@ local function setupAdmin(Config, Requirer)
 	
 	if Requirer:FindFirstChild("Plugins") and #Requirer.Plugins:GetChildren() > 0 then
 		warn("Loading Plugins.")
-		for _, plgin in Requirer.Plugins:GetChildren() do
-			if plgin:IsA("ModuleScript") then
+		for _, plugin in Requirer.Plugins:GetChildren() do
+			if plugin:IsA("ModuleScript") then
 				task.spawn(function()
-					local plugindata = require(plgin)
-					local Start = tick()
+					local plugindata = require(plugin)
+					local PluginStart = tick()
 					local suc = pcall(function()
 						if plugindata.Type == "Command" then
-							local CommandData = Utils.CloneTable(plugindata)
+							local CommandData = Utils.CloneTableDeep(plugindata)
 							CommandData.Type = "Plugin"
 							mainTable.Commands[plugindata.Name] = CommandData
 							for _, alias in plugindata.Aliases or {} do
@@ -1157,9 +1157,9 @@ local function setupAdmin(Config, Requirer)
 						end
 					end)
 					if suc then
-						warn(string.format("Loaded Plugin %s in %s second(s).", plugindata.Name, tick() - Start))
+						warn(string.format("Loaded Plugin %s in %s second(s).", plugindata.Name, tick() - PluginStart))
 					else
-						warn(string.format("Plugin %s failed in %s second(s).", plugindata.Name, tick() - Start))
+						warn(string.format("Plugin %s failed in %s second(s).", plugindata.Name, tick() - PluginStart))
 					end
 				end)
 			end
