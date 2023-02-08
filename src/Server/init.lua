@@ -224,7 +224,7 @@ local APIEvents = {
 local APIFunctions = nil
 
 APIFunctions = {
-	["findUser"] = function(username)
+	["findUser"] = function(username: string)
 		if username == "" or not username then return end
 		username = username:lower()
 		for _, user in pairs (Players:GetPlayers()) do
@@ -238,7 +238,7 @@ APIFunctions = {
 			end
 		end
 	end,
-	["setAdminLevel"] = function(userId, AdminLevel, isPerm)
+	["setAdminLevel"] = function(userId: number, AdminLevel, isPerm)
 		if not mainTable.AdminLevels[AdminLevel] then return end 
 		if AdminLevel == math.huge then return end
 		if not userId then return end
