@@ -132,7 +132,7 @@ local function checkHTTPService()
 end
 
 local mainTable = {
-	Version = "0.9.2.1",
+	Version = "0.9.2.2",
 	VersionName = "Tired Tiger",
 	ChangeLogs = [[
 		Additions
@@ -951,7 +951,6 @@ local function setupAdmin(Config, Requirer)
 	end
 	
 	task.spawn(function()
-		task.wait(0.4)
 		for userid, lvl in mainTable.DataStore:GetAsync("SavedAdmins") do
 			mainTable.Admins[tonumber(userid)] = lvl
 		end

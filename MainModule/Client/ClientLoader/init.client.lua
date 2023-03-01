@@ -107,7 +107,7 @@ warn(string.format("Started in %s second(s).", tick() - Start))
 
 task.spawn(function()
 	while true do
-		MainInterface.General.Holder.ServerUptime.Text = string.format("Server Uptime: %s",Utils.formatTimeFromSeconds(RemoteFunction:InvokeServer("getGameTime")))
+		MainInterface.General.Holder.ServerUptime.Text = string.format("Server Uptime: %s",Utils.formatTimeFromSeconds(workspace.DistributedGameTime))
 		task.wait()
 	end
 end)
