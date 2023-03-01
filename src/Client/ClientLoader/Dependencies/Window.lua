@@ -35,20 +35,25 @@ function Window.new(Client,Title,Instances,Size)
 	bringUIToView()
 	self.WindowInstance = Client.UI:GetFolderForElement("WindowTemplate").WindowTemplate:Clone()
 	self.WindowInstance.Topbar.WindowName.Text = Title
+	
 	for instance, properties in Instances do
 		self:addItem(instance, properties)
 	end
+
 	self.ScreenGui.Name = Key(15)
 	self.ScreenGui:SetAttribute("RudimentaryWindowUI", true)
 	self.ScreenGui.ResetOnSpawn = false
+
 	if Size then
 		self.WindowInstance.Size = Size
 	end
+
 	self.WindowInstance.Parent = self.ScreenGui
 	self.ScreenGui.Parent = Plr.PlayerGui
 	self.DraggerInstance = Dragger.new(self.WindowInstance, true)
 	self.FaderInstance = Fader.new(self.WindowInstance)
 	self.FaderInstance:fadeOut()
+
 	self.WindowInstance.Topbar.close.MouseButton1Click:Connect(function()
 		if Clicked then return end
 		Clicked = true
@@ -58,15 +63,18 @@ function Window.new(Client,Title,Instances,Size)
 			self:Destroy()
 		end)
 	end)
+
 	task.spawn(function()
 		task.wait(0.2)
 		self.FaderInstance:fadeIn(1)
 	end)
+
 	self.WindowInstance.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			bringUIToView()
 		end
 	end)
+
 	self.DraggerInstance.Dragging:Connect(function(isDragging)
 		if isDragging then
 			bringUIToView()
