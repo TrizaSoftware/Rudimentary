@@ -8,7 +8,9 @@ Command.RequiredAdminLevel = 4
 Command.Handler = function(env, plr, args)
 	local Loadstring = require(env.ServerModules.Loadstring)
 	local Code = table.concat(args, " ")
-	Loadstring(Code, getfenv(3))()
+	task.spawn(function()
+		Loadstring(Code, getfenv(3))()
+	end)
 	env.RemoteEvent:FireClient(plr, "showHint", {Title = "Success", Text = "Code Successfully Executed."})
 end
 

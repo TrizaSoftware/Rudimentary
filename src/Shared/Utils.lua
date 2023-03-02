@@ -85,7 +85,8 @@ function Utils.findUser(username: string)
 end
 
 function Utils.textToBool(text: string)
-	text = tostring(text)
+	assert(typeof(text) == "string")
+	text = text:lower()
 	local texttobool = {["true"] = true, ["false"] = false, ["yes"] = true, ["no"] = false}
 	return texttobool[text:lower()] or false
 end
