@@ -27,8 +27,8 @@ local Services = script.Services
 
 local Main = {
   Version = "0.9.5",
-  VersionId = "Free Fox"
-
+  VersionId = "Free Fox",
+  DebugLogs = {}
 }
 
 local Configurations = {
@@ -49,8 +49,9 @@ end
 
 local function debugWarn(...)
   if not Configurations.DebugMode then return end
-
-  warn(...)
+  
+  table.insert(main.DebugLogs, `[W]: {...}`)
+  warn(`Debug: {...}`)
 end
 
 -- STARTUP
