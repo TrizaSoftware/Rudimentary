@@ -1,3 +1,1 @@
-return function (...)
-  return require(script.Server)(...)
-end
+return require(script.Parent.Server)
