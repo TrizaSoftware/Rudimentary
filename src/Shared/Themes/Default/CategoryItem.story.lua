@@ -13,8 +13,17 @@ return function (target)
     ItemValue = ServerTimeValue
   }
   
+  local Thread = coroutine.create(function()
+    while true do
+      ServerTimeValue:set(ServerTimeValue:get() + 1)
+      task.wait(1)
+    end
+  end)
+
+  coroutine.resume(Thread)
 
   return function()
+    coroutine.close(Thread)
     Item:Destroy()
   end
 end

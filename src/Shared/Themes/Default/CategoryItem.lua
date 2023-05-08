@@ -55,7 +55,7 @@ local function CategoryItem(props: CategoryItemProps)
         Text = Computed(function()
           return props.ItemValue:get()
         end, Fusion.cleanup),
-        TextXAlignment = Enum.TextXAlignment.Left,
+        TextXAlignment = Enum.TextXAlignment.Center,
 
         [Children] = {
           New "UITextSizeConstraint" {
