@@ -17,9 +17,18 @@
 
 -- SERVICES
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- LOCATIONS
+
+local SharedPackages = script.Parent.Shared.Packages
+local SharedHelpers = script.Parent.Shared.Helpers
+
 -- MODULES
 
-local Promise = require(script.Parent.Shared.Promise)
+local Promise = require(SharedPackages.Promise)
+local Netter = require(SharedPackages.Netter)
+local TableHelper = require(SharedHelpers.TableHelper)
 
 -- VARIABLES
 
@@ -31,8 +40,31 @@ local Main = {
   DebugLogs = {}
 }
 
-local Configurations = {
-  DebugMode = true
+local Settings = {
+  DebugMode = true,
+  SettingsAccessLevel = 3
+}
+
+local SettingsTags = {
+  ["DebugMode"] = {
+    "StudioOnly",
+    "ServerOnly",
+    "Private"
+  }
+}
+
+local ServerNetwork = Netter.new()
+
+local Environment = {
+  MainVariables = Main,
+  SystemSettings = Settings,
+  Network = ServerNetwork,
+  Folder = nil,
+  MainRemoteEvent = nil,
+  MainRemoteFunction = nil,
+  MainRemoteEventWrapper = nil,
+  MainRemoteFunctionWrapper = nil,
+  UserInformationProperty = ServerNetwork:CreateRemoteProperty({}),
 }
 
 local _warn = warn
@@ -43,27 +75,92 @@ local function warn(...)
   _warn(`[Rudimentary Server]: {...}`)
 end
 
-local function makeEnvironment(target: ModuleScript)
+local function buildEnvironment(forClient: boolean, userAdminLevel: number)
+  local ClonedEnv = TableHelper:CloneDeep(Environment)
+  ClonedEnv.ServerNetwork = ServerNetwork
+  ClonedEnv.UserInformationProperty = Environment.UserInformationProperty
+
+  for setting in ClonedEnv.SystemSettings do
+    if SettingsTags[setting] then
+      if table.find(SettingsTags[setting], "Private") then
+        ClonedEnv.SystemSettings[setting] = nil
+      end
+
+      if table.find(SettingsTags[setting], "ServerOnly") and forClient then
+        ClonedEnv.SystemSettings[setting] = nil
+      end
+    end
+  end
   
+  if forClient then
+    if userAdminLevel or 0 < Settings.SettingsAccessLevel then
+      ClonedEnv.SystemSettings = {}
+    end
+    ClonedEnv.MainVariables.DebugLogs = nil
+    ClonedEnv.ServerNetwork = nil
+    ClonedEnv.UserInformationProperty = nil
+    ClonedEnv.MainRemoteEventWrapper = nil
+    ClonedEnv.MainRemoteFunctionWrapper = nil
+    ClonedEnv.API = nil
+  end
+
+  return ClonedEnv
 end
 
 local function debugWarn(...)
-  if not Configurations.DebugMode then return end
-  
-  table.insert(main.DebugLogs, `[W]: {...}`)
+  if not Settings.DebugMode then return end
+
+  table.insert(Main.DebugLogs, `[W]: {...}`)
   warn(`Debug: {...}`)
 end
 
+-- ENVIRONMENT API
+
+Environment.API = {
+  BuildClientEnvironment = function()
+    return buildEnvironment(true)
+  end
+}
+
 -- STARTUP
 
-local function startAdmin()
+local function startAdmin(...)
   local MainStart = os.clock()
 
-  local ServiceStart = os.clock()
+  debugWarn("Setting Up ReplicatedStorage")
+
+  Environment.Folder = Instance.new("Folder")
+  Environment.Folder.Name = "Rudimentary"
+  Environment.Folder.Parent = ReplicatedStorage
+
+  script.Parent.Shared.Parent = Environment.Folder
+
+  debugWarn("Configuring Network")
+
+  local NetworkFolder = Instance.new("Folder")
+  NetworkFolder.Name = "Network"
+  NetworkFolder.Parent = Environment.Folder
+
+  Environment.MainRemoteEvent = Instance.new("RemoteEvent")
+  Environment.MainRemoteEvent.Parent = NetworkFolder
+  Environment.MainRemoteEventWrapper = ServerNetwork:WrapRemoteEvent(Environment.MainRemoteEvent)
+
+  Environment.MainRemoteFunction = Instance.new("RemoteFunction")
+  Environment.MainRemoteFunction.Parent = NetworkFolder
+  Environment.MainRemoteFunctionWrapper = ServerNetwork:WrapRemoteFunction(Environment.MainRemoteFunction)
+
+  local PropertiesFolder = Instance.new("Folder")
+  PropertiesFolder.Name = "Properties"
+  PropertiesFolder.Parent = NetworkFolder
+
+  local UserInformationPropertyFolder = Environment.UserInformationProperty._folder
+  UserInformationPropertyFolder.Name = "UserInformation"
+  UserInformationPropertyFolder.Parent = PropertiesFolder
 
   debugWarn("Initializing & Starting Services")
 
   local ServiceInitializationPromises = {}
+  local ServiceStartPromises = {}
 
   for _, ServiceModule in Services:GetChildren() do
     if not ServiceModule:IsA("ModuleScript") then continue end
@@ -72,21 +169,42 @@ local function startAdmin()
       local ServiceInformation = require(ServiceModule)
 
       if ServiceInformation.Initialize then
-        table.insert(ServiceInitializationPromises, Promise.new(function(resolve, reject)
+        table.insert(ServiceInitializationPromises, Promise.new(function(resolve)
               local ServiceInitializationStart = os.clock()
 
-              ServiceInformation:Initialize()
+              ServiceInformation:Initialize(buildEnvironment(false))
 
               debugWarn(`{ServiceInformation.Name} Initialized In {os.clock() - ServiceInitializationStart}(s)`)
-          end)
-        )
+              resolve()
+          end):catch(debugWarn))
+      end
+
+      if ServiceInformation.Start then
+          table.insert(ServiceStartPromises, Promise.new(function(resolve)
+            local ServiceStartStart = os.clock()
+
+            ServiceInformation:Start()
+
+            debugWarn(`{ServiceInformation.Name} Started In {os.clock() - ServiceStartStart}(s)`)
+            resolve()
+        end):catch(debugWarn))
       end
     end)
   end
 
-  Promise.all(ServiceInitializationPromises):await():andThen()
+  local ServiceInitialize = os.clock()
 
+  Promise.all(ServiceInitializationPromises):await()
 
+  debugWarn(`Initialized {#Services:GetChildren()} Services in {os.clock() - ServiceInitialize} second(s)`)
+
+  local ServiceStart = os.clock()
+
+  Promise.all(ServiceStartPromises):await()
+
+  debugWarn(`Started {#Services:GetChildren()} Services in {os.clock() - ServiceStart} second(s)`)
+
+  debugWarn(`Started Rudimentary In {os.clock() - MainStart} second(s)`)
 end
 
 

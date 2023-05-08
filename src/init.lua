@@ -1,1 +1,1 @@
-return require(script.Parent.Server)
+return require(script.Server)

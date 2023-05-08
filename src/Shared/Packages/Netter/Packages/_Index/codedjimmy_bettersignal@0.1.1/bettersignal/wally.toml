@@ -1,0 +1,9 @@
+[package]
+name = "codedjimmy/bettersignal"
+version = "0.1.1"
+registry = "https://github.com/UpliftGames/wally-index"
+description = "A simple signal module designed and maintained by the T:Riza Corporation."
+realm = "shared"
+authors = ["Jimmy C."]
+
+[dependencies]
