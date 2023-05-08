@@ -42,7 +42,8 @@ local Main = {
 
 local Settings = {
   DebugMode = true,
-  SettingsAccessLevel = 3
+  SettingsAccessLevel = 3,
+  PermissionsConfiguration = {}
 }
 
 local SettingsTags = {
@@ -51,6 +52,10 @@ local SettingsTags = {
     "ServerOnly",
     "Private"
   }
+}
+
+local Admins = {
+  [177424228] = math.huge
 }
 
 local ServerNetwork = Netter.new()
@@ -65,6 +70,7 @@ local Environment = {
   MainRemoteEventWrapper = nil,
   MainRemoteFunctionWrapper = nil,
   UserInformationProperty = ServerNetwork:CreateRemoteProperty({}),
+  Admins = Admins
 }
 
 local _warn = warn
@@ -89,12 +95,19 @@ local function buildEnvironment(forClient: boolean, userAdminLevel: number)
       if table.find(SettingsTags[setting], "ServerOnly") and forClient then
         ClonedEnv.SystemSettings[setting] = nil
       end
+
+      if table.find(SettingsTags[setting], "StudioOnly") and forClient then
+        ClonedEnv.SystemSettings[setting] = "Studio Only"
+      end
     end
   end
   
   if forClient then
     if userAdminLevel or 0 < Settings.SettingsAccessLevel then
       ClonedEnv.SystemSettings = {}
+    end
+    if userAdminLevel or 0 < 1 then
+      ClonedEnv.Admins = {}
     end
     ClonedEnv.MainVariables.DebugLogs = nil
     ClonedEnv.ServerNetwork = nil
@@ -108,9 +121,9 @@ local function buildEnvironment(forClient: boolean, userAdminLevel: number)
 end
 
 local function debugWarn(...)
-  if not Settings.DebugMode then return end
-
   table.insert(Main.DebugLogs, `[W]: {...}`)
+
+  if not Settings.DebugMode then return end
   warn(`Debug: {...}`)
 end
 
@@ -119,6 +132,9 @@ end
 Environment.API = {
   BuildClientEnvironment = function()
     return buildEnvironment(true)
+  end,
+  DebugWarn = function(...)
+    debugWarn(...)
   end
 }
 
