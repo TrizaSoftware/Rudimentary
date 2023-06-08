@@ -146,7 +146,7 @@ function RemoteEventWrapper:FireFilter(filter: (player: Player) -> boolean, ...)
 end
 
 function RemoteEventWrapper:FireAll(...)
-    assert(self._environment == "Server", "RemoteEventWrapper:FireFilter() can only be called on the server.")
+    assert(self._environment == "Server", "RemoteEventWrapper:FireAll() can only be called on the server.")
     local Args = {...}
     local ClonedArgs = table.clone(Args)
 

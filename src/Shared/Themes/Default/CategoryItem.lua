@@ -64,9 +64,11 @@ local function CategoryItem(props: CategoryItemProps)
           }
         }
       },
+      --[[
       New "UIAspectRatioConstraint" {
         AspectRatio = 5.7
       },
+      ]]
       New "UICorner" {
         CornerRadius = UDim.new(0, 10)
       },

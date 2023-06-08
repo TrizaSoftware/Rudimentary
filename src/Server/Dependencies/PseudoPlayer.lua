@@ -2,27 +2,28 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Folder = ReplicatedStorage:WaitForChild("Rudimentary")
-local SharedPackages = Folder.Shared.SharedPackages
-local SharedHelpers = Folder.Shared.SharedHelpers
+local SharedPackages = Folder.Shared.Packages
+local SharedHelpers = Folder.Shared.Helpers
 
 local BetterSignal = require(SharedPackages.BetterSignal)
 local TableHelper = require(SharedHelpers.TableHelper)
 
-export type PsuedoPlayer = {
+export type PseudoPlayer = {
   Player: Player,
   AdminLevel: number,
   Destroy: () -> nil,
+  _propertyChangedSignalThreads: {thread},
   GetPropertyChangedSignal: () -> {
   }
 }
 
 local PseudoPlayers = {}
 
-local PsuedoPlayer = {}
-PsuedoPlayer.__index = PsuedoPlayer
+local PseudoPlayer = {}
+PseudoPlayer.__index = PseudoPlayer
 
-function PsuedoPlayer.new(player: Player)
-  local self: PsuedoPlayer = setmetatable({}, PsuedoPlayer)
+function PseudoPlayer.new(player: Player)
+  local self: PseudoPlayer = setmetatable({}, PseudoPlayer)
   self.Player = player
   self.AdminLevel = 0
   self._propertyChangedSignalThreads = {}
@@ -30,7 +31,7 @@ function PsuedoPlayer.new(player: Player)
   return self
 end
 
-function PsuedoPlayer:GetPropertyChangedSignal(propertyName: string)
+function PseudoPlayer:GetPropertyChangedSignal(propertyName: string)
   local CurrentProperty = self[propertyName]
   local PropertySignal = BetterSignal.new()
 
@@ -57,7 +58,7 @@ function PsuedoPlayer:GetPropertyChangedSignal(propertyName: string)
   return PropertySignal
 end
 
-function PsuedoPlayer:Destroy()
+function PseudoPlayer:Destroy()
   for _, thread in self._propertyChangedSignalThreads do
     coroutine.close(thread)
   end
@@ -69,8 +70,8 @@ function PsuedoPlayer:Destroy()
   self = nil
 end
 
-function PsuedoPlayer:GetPseudoPlayerFromPlayer(player: Player): PsuedoPlayer
+function PseudoPlayer:GetPseudoPlayerFromPlayer(player: Player): PseudoPlayer
   return PseudoPlayers[player]
 end
 
-return PsuedoPlayer
+return PseudoPlayer

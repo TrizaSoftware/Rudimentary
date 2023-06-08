@@ -27,7 +27,7 @@ local SharedHelpers = script.Parent.Shared.Helpers
 -- MODULES
 
 local Promise = require(SharedPackages.Promise)
-local Netter = require(SharedPackages.Netter)
+local Netgine = require(SharedPackages.Netgine)
 local TableHelper = require(SharedHelpers.TableHelper)
 
 -- VARIABLES
@@ -37,7 +37,15 @@ local Services = script.Services
 local Main = {
   Version = "0.9.5",
   VersionId = "Free Fox",
-  DebugLogs = {}
+  DebugLogs = {},
+  AdminLevels = {
+    [1] = "Moderator",
+    [2] = "Administrator",
+    [3] = "Super Admin",
+    [4] = "Lead Admin",
+    [5] = "Game Creator",
+    [math.huge] = "Admin Developer"
+  }
 }
 
 local Settings = {
@@ -50,7 +58,7 @@ local SettingsTags = {
   ["DebugMode"] = {
     "StudioOnly",
     "ServerOnly",
-    "Private"
+    "Private",
   }
 }
 
@@ -58,7 +66,7 @@ local Admins = {
   [177424228] = math.huge
 }
 
-local ServerNetwork = Netter.new()
+local ServerNetwork = Netgine.new()
 
 local Environment = {
   MainVariables = Main,
@@ -169,7 +177,7 @@ local function startAdmin(...)
   PropertiesFolder.Name = "Properties"
   PropertiesFolder.Parent = NetworkFolder
 
-  local UserInformationPropertyFolder = Environment.UserInformationProperty._folder
+  local UserInformationPropertyFolder = Environment.UserInformationProperty.Folder
   UserInformationPropertyFolder.Name = "UserInformation"
   UserInformationPropertyFolder.Parent = PropertiesFolder
 

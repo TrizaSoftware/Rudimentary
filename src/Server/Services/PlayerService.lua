@@ -5,7 +5,7 @@ local Dependencies = script.Parent.Parent.Dependencies
 -- MODULES
 
 local Service = require(Dependencies.Service)
-local PseudoPlayer = require(Dependencies.PsuedoPlayer)
+local PseudoPlayer = require(Dependencies.PseudoPlayer)
 
 -- VARIABLES
 
@@ -52,7 +52,14 @@ function PlayerService:ComputePlayerAdminLevel(player: Player): number
   return Level
 end
 
-function PlayerService:InitializePlayer(player: Player): PseudoPlayer.PsuedoPlayer
+function PlayerService:InitializePlayer(player: Player): PseudoPlayer.PseudoPlayer
+  local PlayerPseudoPlayer = PseudoPlayer.new(player)
+  PlayerPseudoPlayer.AdminLevel = self:ComputePlayerAdminLevel(player)
+
+  local UserEnvironment = Environment.API.BuildClientEnvironment()
+  UserEnvironment.AdminLevel = PlayerPseudoPlayer.AdminLevel
+  Environment.UserInformationProperty:SetFor(player.UserId, UserEnvironment)
+
   local RudimentaryGui = Instance.new("ScreenGui")
   RudimentaryGui.Name = "RudimentaryUi"
   RudimentaryGui.ResetOnSpawn = false
@@ -61,13 +68,6 @@ function PlayerService:InitializePlayer(player: Player): PseudoPlayer.PsuedoPlay
   local ClientMainScript = script.Parent.Parent.Parent.Client:Clone()
   ClientMainScript.Parent = RudimentaryGui
   ClientMainScript.Disabled = false
-
-  local PlayerPseudoPlayer = PseudoPlayer.new(player)
-  PlayerPseudoPlayer.AdminLevel = self:ComputePlayerAdminLevel(player)
-
-  local UserEnvironment = Environment.API.BuildClientEnvironment()
-  UserEnvironment.AdminLevel = PlayerPseudoPlayer.AdminLevel
-  Environment.UserInformationProperty:SetFor(player.UserId, UserEnvironment)
 end
 
 function PlayerService:GetPseudoPlayer(player: Player)

@@ -1,6 +1,7 @@
-local CategoryItem = require(script.Parent.CategoryItem)
 local Fusion = require(script.Parent.Parent.Parent.Packages.Fusion)
 local Value = Fusion.Value
+
+local CategoryItem = require(script.Parent.CategoryItem)
 
 return function (target)
   local ServerTimeValue = Value(0)

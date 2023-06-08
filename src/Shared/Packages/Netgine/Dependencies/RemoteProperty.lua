@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local Connection = require(script.Parent.Connection)
 local RemoteEventWrapper = require(script.Parent.RemoteEventWrapper)
 local RemoteFunctionWrapper = require(script.Parent.RemoteFunctionWrapper)
+local BetterSignal = require(script.Parent.Parent:FindFirstChild("Packages") and script.Parent.Parent.Packages.BetterSignal or script.Parent.Parent.Parent.BetterSignal)
 
 local RemoteProperty = {}
 RemoteProperty.__index = RemoteProperty
@@ -11,18 +12,19 @@ RemoteProperty.__index = RemoteProperty
 function RemoteProperty.new(initialValue: any, folder: Folder?)
     local self = setmetatable({}, RemoteProperty)
     self.ShareOtherUsersData = false
-    self._folder = folder
-    if not self._folder then
-        self._folder = Instance.new("Folder")
+    self.Folder = folder
+    self.Changed = BetterSignal.new()
+    if not self.Folder then
+        self.Folder = Instance.new("Folder")
         local Event = Instance.new("RemoteEvent")
-        Event.Parent = self._folder
+        Event.Parent = self.Folder
         self._event = RemoteEventWrapper:Wrap(Event)
         local Func = Instance.new("RemoteFunction")
-        Func.Parent = self._folder
+        Func.Parent = self.Folder
         self._func = RemoteFunctionWrapper:Wrap(Func)
     else
-        self._event = RemoteEventWrapper:Wrap(self._folder:FindFirstChildWhichIsA("RemoteEvent"))
-        self._func = RemoteFunctionWrapper:Wrap(self._folder:FindFirstChildWhichIsA("RemoteFunction"))
+        self._event = RemoteEventWrapper:Wrap(self.Folder:FindFirstChildWhichIsA("RemoteEvent"))
+        self._func = RemoteFunctionWrapper:Wrap(self.Folder:FindFirstChildWhichIsA("RemoteFunction"))
     end
     self._values = {}
     self._environment = RunService:IsServer() and "Server" or "Client"
@@ -66,7 +68,8 @@ function RemoteProperty:SetFor(userId: number, newValue: any)
     assert(self._environment == "Server", "RemoteProperty:SetFor() can only be called on the server.")
 
     self._values[userId] = newValue
-
+    
+    self.Changed:Fire(userId, newValue)
     self._event:Fire(Players:GetPlayerByUserId(userId), newValue)
 end
 
@@ -112,7 +115,7 @@ function RemoteProperty:Observe(callback: () -> nil)
 
     local Observer = Connection.new(callback)
 
-    task.defer(function()
+    task.spawn(function()
         Observer._callback(self:Get())
     end)
 
