@@ -4,7 +4,6 @@ local Children = Fusion.Children
 local Computed = Fusion.Computed
 
 local MaterialIcons = require(script.Parent.Parent.Parent.MaterialIcons)
-
 export type CategoryItemProps = {
   Size: UDim2,
   Parent: Frame,
