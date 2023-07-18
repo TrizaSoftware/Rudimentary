@@ -4,7 +4,6 @@ local Children = Fusion.Children
 local Computed = Fusion.Computed
 
 local MaterialIcons = require(script.Parent.Parent.Parent.MaterialIcons)
-
 export type CategoryItemProps = {
   Size: UDim2,
   Parent: Frame,
@@ -64,9 +63,11 @@ local function CategoryItem(props: CategoryItemProps)
           }
         }
       },
+      --[[
       New "UIAspectRatioConstraint" {
         AspectRatio = 5.7
       },
+      ]]
       New "UICorner" {
         CornerRadius = UDim.new(0, 10)
       },

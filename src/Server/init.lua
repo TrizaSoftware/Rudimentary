@@ -27,7 +27,7 @@ local SharedHelpers = script.Parent.Shared.Helpers
 -- MODULES
 
 local Promise = require(SharedPackages.Promise)
-local Netter = require(SharedPackages.Netter)
+local Netgine = require(SharedPackages.Netgine)
 local TableHelper = require(SharedHelpers.TableHelper)
 
 -- VARIABLES
@@ -37,23 +37,36 @@ local Services = script.Services
 local Main = {
   Version = "0.9.5",
   VersionId = "Free Fox",
-  DebugLogs = {}
+  DebugLogs = {},
+  AdminLevels = {
+    [1] = "Moderator",
+    [2] = "Administrator",
+    [3] = "Super Admin",
+    [4] = "Lead Admin",
+    [5] = "Game Creator",
+    [math.huge] = "Admin Developer"
+  }
 }
 
 local Settings = {
   DebugMode = true,
-  SettingsAccessLevel = 3
+  SettingsAccessLevel = 3,
+  PermissionsConfiguration = {}
 }
 
 local SettingsTags = {
   ["DebugMode"] = {
     "StudioOnly",
     "ServerOnly",
-    "Private"
+    "Private",
   }
 }
 
-local ServerNetwork = Netter.new()
+local Admins = {
+  [177424228] = math.huge
+}
+
+local ServerNetwork = Netgine.new()
 
 local Environment = {
   MainVariables = Main,
@@ -65,6 +78,7 @@ local Environment = {
   MainRemoteEventWrapper = nil,
   MainRemoteFunctionWrapper = nil,
   UserInformationProperty = ServerNetwork:CreateRemoteProperty({}),
+  Admins = Admins
 }
 
 local _warn = warn
@@ -89,12 +103,19 @@ local function buildEnvironment(forClient: boolean, userAdminLevel: number)
       if table.find(SettingsTags[setting], "ServerOnly") and forClient then
         ClonedEnv.SystemSettings[setting] = nil
       end
+
+      if table.find(SettingsTags[setting], "StudioOnly") and forClient then
+        ClonedEnv.SystemSettings[setting] = "Studio Only"
+      end
     end
   end
   
   if forClient then
     if userAdminLevel or 0 < Settings.SettingsAccessLevel then
       ClonedEnv.SystemSettings = {}
+    end
+    if userAdminLevel or 0 < 1 then
+      ClonedEnv.Admins = {}
     end
     ClonedEnv.MainVariables.DebugLogs = nil
     ClonedEnv.ServerNetwork = nil
@@ -108,9 +129,9 @@ local function buildEnvironment(forClient: boolean, userAdminLevel: number)
 end
 
 local function debugWarn(...)
-  if not Settings.DebugMode then return end
-
   table.insert(Main.DebugLogs, `[W]: {...}`)
+
+  if not Settings.DebugMode then return end
   warn(`Debug: {...}`)
 end
 
@@ -119,6 +140,9 @@ end
 Environment.API = {
   BuildClientEnvironment = function()
     return buildEnvironment(true)
+  end,
+  DebugWarn = function(...)
+    debugWarn(...)
   end
 }
 
@@ -153,7 +177,7 @@ local function startAdmin(...)
   PropertiesFolder.Name = "Properties"
   PropertiesFolder.Parent = NetworkFolder
 
-  local UserInformationPropertyFolder = Environment.UserInformationProperty._folder
+  local UserInformationPropertyFolder = Environment.UserInformationProperty.Folder
   UserInformationPropertyFolder.Name = "UserInformation"
   UserInformationPropertyFolder.Parent = PropertiesFolder
 
