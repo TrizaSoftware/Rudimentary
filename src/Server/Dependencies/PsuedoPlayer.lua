@@ -1,14 +1,8 @@
-export type PsuedoPlayer = {
-  Player: Player,
-  AdminLevel: number,
-  Destroy: () -> nil
-}
-
 local PsuedoPlayer = {}
 PsuedoPlayer.__index = PsuedoPlayer
 
 function PsuedoPlayer.new(player: Player)
-  local self: PsuedoPlayer = setmetatable({}, PsuedoPlayer)
+  local self = setmetatable({}, PsuedoPlayer)
   self.Player = player
   self.AdminLevel = 0
   return self

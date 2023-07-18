@@ -15,7 +15,7 @@ local Environment
 local PlayerService = Service.new("PlayerService")
 PlayerService.RegisteredPlayers = {}
 
-function PlayerService:InitializePlayer(player: Player): PseudoPlayer.PsuedoPlayer
+function PlayerService:InitializePlayer(player: Player): typeof(PseudoPlayer)
   local RudimentaryGui = Instance.new("ScreenGui")
   RudimentaryGui.Name = "RudimentaryUi"
   RudimentaryGui.ResetOnSpawn = false
