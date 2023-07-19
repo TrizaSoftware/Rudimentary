@@ -143,6 +143,9 @@ Environment.API = {
   end,
   DebugWarn = function(...)
     debugWarn(...)
+  end,
+  SetUserAdminLevel = function(player: Player, level: number?)
+    Admins[player] = level
   end
 }
 
@@ -183,8 +186,8 @@ local function startAdmin(...)
 
   debugWarn("Initializing & Starting Services")
 
-  local ServiceInitializationPromises = {}
-  local ServiceStartPromises = {}
+  local ServiceInitializationPromises: {typeof(Promise)} = {}
+  local ServiceStartPromises: {typeof(Promise)} = {}
 
   for _, ServiceModule in Services:GetChildren() do
     if not ServiceModule:IsA("ModuleScript") then continue end
