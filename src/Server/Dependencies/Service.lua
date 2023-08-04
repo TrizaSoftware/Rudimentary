@@ -1,23 +1,12 @@
-local Services = {}
-
 local Service = {}
 Service.__index = Service
 
-export type Service = {
-  Name: string,
-  Initialize: () -> nil,
-  Start: () -> nil
-}
-
 function Service.new(name: string)
-  local self: Service = setmetatable({}, Service)
+  local self: typeof(Service) = setmetatable({}, Service)
   self.Name = name
-  Services[name] = self
+  self.Started = false
+  self.Initialized = false
   return self
-end
-
-function Service:GetService(serviceName: string): Service
-  return Services[serviceName]
 end
 
 return Service

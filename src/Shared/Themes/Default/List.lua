@@ -8,7 +8,8 @@ local Window = require(script.Parent.Window)
 export type ListProps = {
   Title: string,
   Elements: any,
-  Parent: Instance
+  Parent: Instance,
+  RefreshRequestArgs: {any}?
 }
 
 local function List(props: ListProps)

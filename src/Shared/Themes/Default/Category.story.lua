@@ -29,7 +29,6 @@ return function (target: Instance)
     }
   }
 
-  
   local Thread = coroutine.create(function()
     while true do
       ServerTimeValue:set(ServerTimeValue:get() + 1)

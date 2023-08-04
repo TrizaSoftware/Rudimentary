@@ -6,7 +6,7 @@
 /_/ |_|\__,_/\__,_/_/_/ /_/ /_/\___/_/ /_/\__/\__,_/_/   \__, /  
                                                         /____/                
                                                         
-	 Programmer(s): CodedJimmy
+	 Programmer(s): Jyrezo
 	 
 	 Rudimentary Server
 	  
@@ -23,12 +23,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SharedPackages = script.Parent.Shared.Packages
 local SharedHelpers = script.Parent.Shared.Helpers
+local Dependencies = script.Dependencies
 
 -- MODULES
 
 local Promise = require(SharedPackages.Promise)
 local Netgine = require(SharedPackages.Netgine)
 local TableHelper = require(SharedHelpers.TableHelper)
+local Service = require(Dependencies.Service)
 
 -- VARIABLES
 
@@ -99,7 +101,7 @@ local function warn(...)
   _warn(`[Rudimentary Server]: {...}`)
 end
 
-local function buildEnvironment(forClient: boolean, userAdminLevel: number)
+local function buildEnvironment(forClient: boolean, userAdminLevel: number?)
   local ClonedEnv = TableHelper:CloneDeep(Environment)
   ClonedEnv.ServerNetwork = ServerNetwork
   ClonedEnv.UserInformationProperty = Environment.UserInformationProperty
@@ -146,7 +148,7 @@ local function debugWarn(...)
 end
 
 local function handleNetworkEvent(networkEvent: string, ...)
-  
+
 end
 
 -- ENVIRONMENT API
@@ -194,6 +196,14 @@ local function startAdmin(...)
   Environment.MainRemoteFunction.Parent = NetworkFolder
   Environment.MainRemoteFunctionWrapper = ServerNetwork:WrapRemoteFunction(Environment.MainRemoteFunction)
 
+  Environment.MainRemoteEventWrapper:Connect(function(player: Player, eventName: string, ...: any)
+    task.spawn(handleNetworkEvent(eventName, table.unpack({player, ...})))
+  end)
+
+  Environment.MainRemoteFunctionWrapper:Connect(function(player: Player, eventName: string, ...: any)
+    return handleNetworkEvent(eventName, table.unpack({player, ...}))
+  end)
+
   local PropertiesFolder = Instance.new("Folder")
   PropertiesFolder.Name = "Properties"
   PropertiesFolder.Parent = NetworkFolder
@@ -211,13 +221,14 @@ local function startAdmin(...)
     if not ServiceModule:IsA("ModuleScript") then continue end
 
     task.spawn(function()
-      local ServiceInformation = require(ServiceModule)
+      local ServiceInformation: typeof(Service) = require(ServiceModule)
 
       if ServiceInformation.Initialize then
         table.insert(ServiceInitializationPromises, Promise.new(function(resolve)
               local ServiceInitializationStart = os.clock()
 
               ServiceInformation:Initialize(buildEnvironment(false))
+              ServiceInformation.Initialized = true
 
               debugWarn(`{ServiceInformation.Name} Initialized In {os.clock() - ServiceInitializationStart}(s)`)
               resolve()
@@ -229,6 +240,7 @@ local function startAdmin(...)
             local ServiceStartStart = os.clock()
 
             ServiceInformation:Start()
+            ServiceInformation.Started = true
 
             debugWarn(`{ServiceInformation.Name} Started In {os.clock() - ServiceStartStart}(s)`)
             resolve()
