@@ -62,6 +62,16 @@ local SettingsTags = {
   }
 }
 
+local NetworkEventCallbacks = {
+  Catchers = {
+
+  },
+
+  Callbacks = {
+    
+  }
+}
+
 local Admins = {
   [177424228] = math.huge
 }
@@ -135,6 +145,10 @@ local function debugWarn(...)
   warn(`Debug: {...}`)
 end
 
+local function handleNetworkEvent(networkEvent: string, ...)
+  
+end
+
 -- ENVIRONMENT API
 
 Environment.API = {
@@ -146,6 +160,10 @@ Environment.API = {
   end,
   SetUserAdminLevel = function(player: Player, level: number?)
     Admins[player] = level
+  end,
+  CatchNetworkEvent = function(eventName: string)
+  end,
+  AddNetworkEventResponse = function(eventName: string, callback: () -> any)
   end
 }
 
