@@ -179,6 +179,11 @@ local function startAdmin(...)
   Environment.Folder = Instance.new("Folder")
   Environment.Folder.Name = "Rudimentary"
   Environment.Folder.Parent = ReplicatedStorage
+  
+  local StartTime = Instance.new("IntValue")
+  StartTime.Name = "StartTime"
+  StartTime.Value = os.time()
+  StartTime.Parent = Environment.Folder
 
   script.Parent.Shared.Parent = Environment.Folder
 
@@ -230,7 +235,7 @@ local function startAdmin(...)
               ServiceInformation:Initialize(buildEnvironment(false))
               ServiceInformation.Initialized = true
 
-              debugWarn(`{ServiceInformation.Name} Initialized In {os.clock() - ServiceInitializationStart}(s)`)
+              debugWarn(`{ServiceInformation.Name} Initialized in {os.clock() - ServiceInitializationStart} second(s)`)
               resolve()
           end):catch(debugWarn))
       end
@@ -242,7 +247,7 @@ local function startAdmin(...)
             ServiceInformation:Start()
             ServiceInformation.Started = true
 
-            debugWarn(`{ServiceInformation.Name} Started In {os.clock() - ServiceStartStart}(s)`)
+            debugWarn(`{ServiceInformation.Name} Started in {os.clock() - ServiceStartStart} second(s)`)
             resolve()
         end):catch(debugWarn))
       end
@@ -261,7 +266,7 @@ local function startAdmin(...)
 
   debugWarn(`Started {#Services:GetChildren()} Services in {os.clock() - ServiceStart} second(s)`)
 
-  debugWarn(`Started Rudimentary In {os.clock() - MainStart} second(s)`)
+  debugWarn(`Started Rudimentary in {os.clock() - MainStart} second(s)`)
 end
 
 

@@ -61,7 +61,7 @@ function PlayerService:InitializePlayer(player: Player): typeof(PseudoPlayer)
   Environment.UserInformationProperty:SetFor(player.UserId, UserEnvironment)
 
   local RudimentaryGui = Instance.new("ScreenGui")
-  RudimentaryGui.Name = "RudimentaryUi"
+  RudimentaryGui.Name = "RudimentaryInterface"
   RudimentaryGui.ResetOnSpawn = false
   RudimentaryGui.Parent = player.PlayerGui
 
