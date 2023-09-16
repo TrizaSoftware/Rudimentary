@@ -6,6 +6,7 @@ local Dependencies = script.Parent.Parent.Dependencies
 
 local Service = require(Dependencies.Service)
 local PseudoPlayer = require(Dependencies.PseudoPlayer)
+local Promise = require(script.Parent.Parent.Parent.Shared.Packages.Promise)
 
 -- VARIABLES
 
@@ -17,39 +18,42 @@ local PlayerService = Service.new("PlayerService")
 PlayerService.RegisteredPlayers = {}
 
 function PlayerService:ComputePlayerAdminLevel(player: Player): number
-  local Level: number = Environment.Admins[player.UserId] or 0
+  --local Level: number = Environment.Admins[player.UserId] or 0
+  local PermissionLevels = {Environment.Admins[player.UserId] or 0}
+  local UserPermissionLevelPromises = {}
 
   for _, permissionConfig in Environment.SystemSettings.PermissionsConfiguration do
-    if permissionConfig.Type == "Rank" then
-      if permissionConfig.Operation == ">=" then
-        if player:GetRankInGroup(permissionConfig.GroupId) >= permissionConfig.Rank then
-          if permissionConfig.Level > Level then
-            Level = permissionConfig.Level
+    table.insert(UserPermissionLevelPromises, Promise.new(function(resolve)
+      if permissionConfig.Type == "Rank" then
+        if permissionConfig.Operation == ">=" then
+          if player:GetRankInGroup(permissionConfig.GroupId) >= permissionConfig.Rank then
+            table.insert(PermissionLevels, permissionConfig.Level)
+          end
+        elseif permissionConfig.Operation == "<=" then
+          if player:GetRankInGroup(permissionConfig.GroupId) <= permissionConfig.Rank then
+            table.insert(PermissionLevels, permissionConfig.Level)
+          end
+        elseif permissionConfig.Operation == "==" then
+          if player:GetRankInGroup(permissionConfig.GroupId) == permissionConfig.Rank then
+            table.insert(PermissionLevels, permissionConfig.Level)
           end
         end
-      elseif permissionConfig.Operation == "<=" then
-        if player:GetRankInGroup(permissionConfig.GroupId) <= permissionConfig.Rank then
-          if permissionConfig.Level > Level then
-            Level = permissionConfig.Level
-          end
-        end
-      elseif permissionConfig.Operation == "==" then
-        if player:GetRankInGroup(permissionConfig.GroupId) == permissionConfig.Rank then
-          if permissionConfig.Level > Level then
-            Level = permissionConfig.Level
-          end
+      elseif permissionConfig.Type == "Gamepass" then
+        if MarketplaceService:UserOwnsGamePassAsync(player.UserId, permissionConfig.GamepassId) then
+          table.insert(PermissionLevels, permissionConfig.Level)
         end
       end
-    elseif permissionConfig.Type == "Gamepass" then
-      if MarketplaceService:UserOwnsGamePassAsync(player.UserId, permissionConfig.GamepassId) then
-        if permissionConfig.Level > Level then
-          Level = permissionConfig.Level
-        end
-      end
-    end
+      resolve()
+    end))
   end
 
-  return Level
+  Promise.all(UserPermissionLevelPromises):await()
+
+  table.sort(PermissionLevels, function(a, b)
+    return a > b
+  end)
+
+  return PermissionLevels[1]
 end
 
 function PlayerService:InitializePlayer(player: Player): typeof(PseudoPlayer)
@@ -68,6 +72,8 @@ function PlayerService:InitializePlayer(player: Player): typeof(PseudoPlayer)
   local ClientMainScript = script.Parent.Parent.Parent.Client:Clone()
   ClientMainScript.Parent = RudimentaryGui
   ClientMainScript.Disabled = false
+
+  return PlayerPseudoPlayer
 end
 
 function PlayerService:GetPseudoPlayer(player: Player)

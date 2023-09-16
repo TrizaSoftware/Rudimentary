@@ -148,7 +148,28 @@ local function debugWarn(...)
 end
 
 local function handleNetworkEvent(networkEvent: string, ...)
+  local Data = {...}
+  local Responses = {}
+  local ResponsePromises = {}
 
+  if NetworkEventCallbacks.Catchers[networkEvent] then
+    for _, catacher in NetworkEventCallbacks.Catchers[networkEvent] do
+      task.spawn(catacher, table.unpack(Data))
+    end
+  end
+
+  if NetworkEventCallbacks.Callbacks[networkEvent] then
+    for _, callback in NetworkEventCallbacks.Callbacks[networkEvent] do
+      table.insert(ResponsePromises, Promise.new(function(resolve)
+        table.insert(Responses, callback(table.unpack(Data)))
+        resolve()
+      end))
+    end
+
+    Promise.all(ResponsePromises):await()
+  end
+
+  return if Responses[1] and Responses[2] then Responses else Responses[1]
 end
 
 -- ENVIRONMENT API
@@ -163,9 +184,19 @@ Environment.API = {
   SetUserAdminLevel = function(player: Player, level: number?)
     Admins[player] = level
   end,
-  CatchNetworkEvent = function(eventName: string)
+  CatchNetworkEvent = function(eventName: string, callback: () -> any)
+    if not NetworkEventCallbacks.Catchers[eventName] then
+      NetworkEventCallbacks.Catchers[eventName] = {}
+    end
+
+    table.insert(NetworkEventCallbacks.Catchers[eventName], callback)
   end,
-  AddNetworkEventResponse = function(eventName: string, callback: () -> any)
+  AddNetworkEventCallback = function(eventName: string, callback: () -> any)
+    if not NetworkEventCallbacks.Callbacks[eventName] then
+      NetworkEventCallbacks.Callbacks[eventName] = {}
+    end
+
+    table.insert(NetworkEventCallbacks.Callbacks[eventName], callback)
   end
 }
 
@@ -185,7 +216,7 @@ local function startAdmin(...)
   StartTime.Value = os.time()
   StartTime.Parent = Environment.Folder
 
-  script.Parent.Shared.Parent = Environment.Folder
+  script.Parent.Shared:Clone().Parent = Environment.Folder
 
   debugWarn("Configuring Network")
 
