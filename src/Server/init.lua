@@ -53,30 +53,39 @@ local Main = {
 local Settings = {
   DebugMode = true,
   SettingsAccessLevel = 3,
-  PermissionsConfiguration = {}
+  PermissionsConfiguration = {},
+  MainPrefix = ":",
+  SecondaryPrefix = "!",
+  DangerousCommandMaxTargets = 5,
+  Theme = "Default"
 }
 
 local SettingsTags = {
   ["DebugMode"] = {
-    "StudioOnly",
     "ServerOnly",
     "Private",
+    "StudioOnly",
+  },
+  ["PermissionsConfiguration"] = {
+    "StudioOnly"
+  },
+  ["Theme"] = {
+    "AllAccess"
   }
 }
 
 local NetworkEventCallbacks = {
-  Catchers = {
+	Catchers = {},
 
-  },
-
-  Callbacks = {
-    
-  }
+	Callbacks = {},
 }
 
 local Admins = {
   [177424228] = math.huge
 }
+
+local CommandRegistry = {}
+local CommandAliasRegistry = {}
 
 local ServerNetwork = Netgine.new()
 
@@ -90,7 +99,20 @@ local Environment = {
   MainRemoteEventWrapper = nil,
   MainRemoteFunctionWrapper = nil,
   UserInformationProperty = ServerNetwork:CreateRemoteProperty({}),
+  CommandRegistry = CommandRegistry,
+  CommandAliasRegistry = CommandAliasRegistry,
   Admins = Admins
+}
+
+local PersistantEnvironmentVariables = {
+  "SystemSettings",
+  "CommandRegistry",
+  "CommandAliasRegistry",
+  "Network",
+  "UserInformationProperty",
+  "Admins",
+  "MainRemoteEventWrapper",
+  "MainRemoteFunctionWrapper"
 }
 
 local _warn = warn
@@ -103,8 +125,10 @@ end
 
 local function buildEnvironment(forClient: boolean, userAdminLevel: number?)
   local ClonedEnv = TableHelper:CloneDeep(Environment)
-  ClonedEnv.ServerNetwork = ServerNetwork
-  ClonedEnv.UserInformationProperty = Environment.UserInformationProperty
+
+  for _, variableName in PersistantEnvironmentVariables do
+    ClonedEnv[variableName] = Environment[variableName]
+  end
 
   for setting in ClonedEnv.SystemSettings do
     if SettingsTags[setting] then
@@ -123,17 +147,27 @@ local function buildEnvironment(forClient: boolean, userAdminLevel: number?)
   end
   
   if forClient then
-    if userAdminLevel or 0 < Settings.SettingsAccessLevel then
-      ClonedEnv.SystemSettings = {}
+    if (userAdminLevel or 0) < Settings.SettingsAccessLevel then
+      local NewSettings = {}
+
+      for settingName, value in Settings do
+        if table.find(SettingsTags[settingName] or {}, "AllAccess") then
+          NewSettings[settingName] = value
+        end
+      end
+
+      ClonedEnv.SystemSettings = NewSettings
     end
-    if userAdminLevel or 0 < 1 then
+    if (userAdminLevel or 0) < 1 then
       ClonedEnv.Admins = {}
     end
     ClonedEnv.MainVariables.DebugLogs = nil
-    ClonedEnv.ServerNetwork = nil
+    ClonedEnv.Network = nil
     ClonedEnv.UserInformationProperty = nil
     ClonedEnv.MainRemoteEventWrapper = nil
     ClonedEnv.MainRemoteFunctionWrapper = nil
+    ClonedEnv.CommandRegistry = nil
+    ClonedEnv.CommandAliasRegistry = nil
     ClonedEnv.API = nil
   end
 
@@ -175,8 +209,8 @@ end
 -- ENVIRONMENT API
 
 Environment.API = {
-  BuildClientEnvironment = function()
-    return buildEnvironment(true)
+  BuildClientEnvironment = function(userAdminLevel: number?)
+    return buildEnvironment(true, userAdminLevel or 0)
   end,
   DebugWarn = function(...)
     debugWarn(...)
@@ -233,7 +267,7 @@ local function startAdmin(...)
   Environment.MainRemoteFunctionWrapper = ServerNetwork:WrapRemoteFunction(Environment.MainRemoteFunction)
 
   Environment.MainRemoteEventWrapper:Connect(function(player: Player, eventName: string, ...: any)
-    task.spawn(handleNetworkEvent(eventName, table.unpack({player, ...})))
+    task.spawn(handleNetworkEvent, eventName, table.unpack({player, ...}))
   end)
 
   Environment.MainRemoteFunctionWrapper:Connect(function(player: Player, eventName: string, ...: any)
@@ -275,6 +309,7 @@ local function startAdmin(...)
           table.insert(ServiceStartPromises, Promise.new(function(resolve)
             local ServiceStartStart = os.clock()
 
+            debug.setmemorycategory(`Rudimentary_{ServiceInformation.Name}`)
             ServiceInformation:Start()
             ServiceInformation.Started = true
 
@@ -296,6 +331,23 @@ local function startAdmin(...)
   Promise.all(ServiceStartPromises):await()
 
   debugWarn(`Started {#Services:GetChildren()} Services in {os.clock() - ServiceStart} second(s)`)
+
+  debugWarn(`Registering Commands`)
+
+  local CommandRegistrationStart = os.clock()
+
+  for _, command in script.Commands:GetDescendants() do
+    if not command:IsA("ModuleScript") then continue end
+
+    local CommandInformation = require(command)
+    CommandRegistry[CommandInformation.Name] = CommandInformation
+
+    for _, alias in CommandInformation.Aliases do
+      CommandAliasRegistry[alias] = CommandInformation.Name
+    end
+  end
+
+  debugWarn(`Registered Commands in {os.clock() - CommandRegistrationStart} second(s)`)
 
   debugWarn(`Started Rudimentary in {os.clock() - MainStart} second(s)`)
 end

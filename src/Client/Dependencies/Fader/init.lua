@@ -1,4 +1,4 @@
-	--[[
+--[[
 
     ______          __         
    / ____/___ _____/ /__  _____
@@ -23,34 +23,34 @@ local FaderInstances = {}
 local ValidFrames = {
 	"Frame",
 	"ImageLabel",
-	"ScrollingFrame"
+	"ScrollingFrame",
 }
 local ValidProperties = {
 	"BackgroundTransparency",
 	"TextTransparency",
 	"ScrollBarImageTransparency",
 	"TextStrokeTransparency",
-	"ImageTransparency"
+	"ImageTransparency",
 }
 local SpecialPropertiesForItems = {
 	["UIStroke"] = {
-		"Transparency"
-	}
+		"Transparency",
+	},
 }
 local InstancesToNotCheck = {
 	"UIGradient",
 	"UIListLayout",
-	"UIGridLayout"
+	"UIGridLayout",
 }
 
-function hasProperty(item : Instance, property : string)
+function hasProperty(item: Instance, property: string)
 	local suc = pcall(function()
 		local test = item[property]
 	end)
 	return suc
 end
 
-function checkIsInFader(item : Instance)
+function checkIsInFader(item: Instance)
 	for _, faderInstance in FaderInstances do
 		if faderInstance.InterfaceItems[item] then
 			return true
@@ -59,7 +59,7 @@ function checkIsInFader(item : Instance)
 	return false
 end
 
-function pickItem(itemTable : table)
+function pickItem(itemTable: table)
 	for item, properties in itemTable do
 		for property, value in properties do
 			if value ~= 1 then
@@ -72,7 +72,7 @@ end
 
 function CloneTable(table)
 	local ClonedTable = {}
-	for i,v in pairs (table) do
+	for i, v in pairs(table) do
 		if typeof(v) == "table" then
 			ClonedTable[i] = CloneTable(v)
 		else
@@ -85,9 +85,12 @@ end
 local Fader = {}
 Fader.__index = Fader
 
-function Fader.new(interface : Instance)
+function Fader.new(interface: Instance)
 	local self = setmetatable({}, Fader)
-	assert(table.find(ValidFrames, interface.ClassName) ~= nil, string.format("%s isn't a valid FrameType.", interface.ClassName))
+	assert(
+		table.find(ValidFrames, interface.ClassName) ~= nil,
+		string.format("%s isn't a valid FrameType.", interface.ClassName)
+	)
 	self.MainInterface = interface
 	self.InterfaceItems = {}
 	self.EasingStyle = "Quint"
@@ -96,7 +99,7 @@ function Fader.new(interface : Instance)
 	self.FadeStatus = "FadedIn"
 	self.Fading = false
 	self:addItem(interface)
-	for _, item : Instance in interface:GetDescendants() do
+	for _, item: Instance in interface:GetDescendants() do
 		if not checkIsInFader(item) then
 			self:addItem(item)
 		end
@@ -115,7 +118,7 @@ function Fader.new(interface : Instance)
 	return self
 end
 
-function Fader:setEasingStyle(style : string) 
+function Fader:setEasingStyle(style: string)
 	local foundStyle = false
 	for _, item in Enum.EasingStyle:GetEnumItems() do
 		if item.Name == style then
@@ -128,7 +131,7 @@ function Fader:setEasingStyle(style : string)
 	end
 end
 
-function Fader:addItem(item : Instance)
+function Fader:addItem(item: Instance)
 	if not table.find(InstancesToNotCheck, item.ClassName) then
 		self.InterfaceItems[item] = {}
 		for _, property in ValidProperties do
@@ -144,12 +147,12 @@ function Fader:addItem(item : Instance)
 		if (self.FadeStatus == "FadedOut" and not self.Fading) or (self.FadeStatus == "FadedIn" and self.Fading) then
 			for property, _ in self.InterfaceItems[item] do
 				item[property] = 1
-			end			
+			end
 		end
 	end
 end
 
-function Fader:fadeOut(seconds : number)
+function Fader:fadeOut(seconds: number)
 	seconds = seconds or 0
 	local Item = pickItem(self.InterfaceItems)
 	assert(Item, "At least one item must contain a property which can be tracked.")
@@ -177,7 +180,7 @@ function Fader:fadeOut(seconds : number)
 	end
 end
 
-function Fader:fadeIn(seconds : number)
+function Fader:fadeIn(seconds: number)
 	seconds = seconds or 0
 	local Item = pickItem(self.InterfaceItems)
 	assert(Item, "At least one item must contain a property which can be tracked.")

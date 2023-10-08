@@ -7,6 +7,7 @@ local Dependencies = script.Parent.Parent.Dependencies
 local Service = require(Dependencies.Service)
 local PseudoPlayer = require(Dependencies.PseudoPlayer)
 local Promise = require(script.Parent.Parent.Parent.Shared.Packages.Promise)
+local BetterSignal = require(script.Parent.Parent.Parent.Shared.Packages.BetterSignal)
 
 -- VARIABLES
 
@@ -16,51 +17,56 @@ local Environment
 
 local PlayerService = Service.new("PlayerService")
 PlayerService.RegisteredPlayers = {}
+PlayerService.PlayerInitialized = BetterSignal.new()
 
 function PlayerService:ComputePlayerAdminLevel(player: Player): number
-  --local Level: number = Environment.Admins[player.UserId] or 0
-  local PermissionLevels = {Environment.Admins[player.UserId] or 0}
-  local UserPermissionLevelPromises = {}
+	local PermissionLevels = { Environment.Admins[player.UserId] or 0 }
+	local UserPermissionLevelPromises = {}
 
-  for _, permissionConfig in Environment.SystemSettings.PermissionsConfiguration do
-    table.insert(UserPermissionLevelPromises, Promise.new(function(resolve)
-      if permissionConfig.Type == "Rank" then
-        if permissionConfig.Operation == ">=" then
-          if player:GetRankInGroup(permissionConfig.GroupId) >= permissionConfig.Rank then
-            table.insert(PermissionLevels, permissionConfig.Level)
-          end
-        elseif permissionConfig.Operation == "<=" then
-          if player:GetRankInGroup(permissionConfig.GroupId) <= permissionConfig.Rank then
-            table.insert(PermissionLevels, permissionConfig.Level)
-          end
-        elseif permissionConfig.Operation == "==" then
-          if player:GetRankInGroup(permissionConfig.GroupId) == permissionConfig.Rank then
-            table.insert(PermissionLevels, permissionConfig.Level)
-          end
-        end
-      elseif permissionConfig.Type == "Gamepass" then
-        if MarketplaceService:UserOwnsGamePassAsync(player.UserId, permissionConfig.GamepassId) then
-          table.insert(PermissionLevels, permissionConfig.Level)
-        end
-      end
-      resolve()
-    end))
-  end
+	for _, permissionConfig in Environment.SystemSettings.PermissionsConfiguration do
+		table.insert(
+			UserPermissionLevelPromises,
+			Promise.new(function(resolve)
+				if permissionConfig.Type == "Rank" then
+					local PlayerRank = player:GetRankInGroup(permissionConfig.GroupId)
 
-  Promise.all(UserPermissionLevelPromises):await()
+					if permissionConfig.Operation == ">=" then
+						if PlayerRank >= permissionConfig.Rank then
+							table.insert(PermissionLevels, permissionConfig.Level)
+						end
+					elseif permissionConfig.Operation == "<=" then
+						if PlayerRank <= permissionConfig.Rank then
+							table.insert(PermissionLevels, permissionConfig.Level)
+						end
+					elseif permissionConfig.Operation == "==" then
+						if PlayerRank == permissionConfig.Rank then
+							table.insert(PermissionLevels, permissionConfig.Level)
+						end
+					end
+				elseif permissionConfig.Type == "Gamepass" then
+					if MarketplaceService:UserOwnsGamePassAsync(player.UserId, permissionConfig.GamepassId) then
+						table.insert(PermissionLevels, permissionConfig.Level)
+					end
+				end
+				resolve()
+			end)
+		)
+	end
 
-  table.sort(PermissionLevels, function(a, b)
-    return a > b
-  end)
+	Promise.all(UserPermissionLevelPromises):await()
 
-  return PermissionLevels[1]
+	table.sort(PermissionLevels, function(a, b)
+		return a > b
+	end)
+
+	return PermissionLevels[1]
 end
 
 function PlayerService:InitializePlayer(player: Player): typeof(PseudoPlayer)
   local PlayerPseudoPlayer = PseudoPlayer.new(player)
   PlayerPseudoPlayer.AdminLevel = self:ComputePlayerAdminLevel(player)
 
-  local UserEnvironment = Environment.API.BuildClientEnvironment()
+  local UserEnvironment = Environment.API.BuildClientEnvironment(PlayerPseudoPlayer.AdminLevel)
   UserEnvironment.AdminLevel = PlayerPseudoPlayer.AdminLevel
   Environment.UserInformationProperty:SetFor(player.UserId, UserEnvironment)
 
@@ -73,6 +79,8 @@ function PlayerService:InitializePlayer(player: Player): typeof(PseudoPlayer)
   ClientMainScript.Parent = RudimentaryGui
   ClientMainScript.Disabled = false
 
+  self.PlayerInitialized:Fire(PlayerPseudoPlayer)
+
   return PlayerPseudoPlayer
 end
 
@@ -80,9 +88,7 @@ function PlayerService:GetPseudoPlayer(player: Player)
   return PseudoPlayer:GetPseudoPlayerFromPlayer(player)
 end
 
-function PlayerService:Initialize(env)
-  Environment = env
-
+function PlayerService:Start()
   for _, player in Players:GetPlayers() do
     self:InitializePlayer(player)
   end
@@ -95,6 +101,10 @@ function PlayerService:Initialize(env)
     local PlayerPseudoPlayer = PseudoPlayer:GetPseudoPlayerFromPlayer(player)
     PlayerPseudoPlayer:Destroy()
   end)
+end
+
+function PlayerService:Initialize(env)
+  Environment = env
 end
 
 return PlayerService

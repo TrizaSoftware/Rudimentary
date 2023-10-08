@@ -25,13 +25,13 @@ local TestService = game:GetService("TestService")
 -- LOCATIONS
 
 local Folder = ReplicatedStorage:WaitForChild("Rudimentary")
+local Themes = Folder.Shared.Themes
 local SharedPackages = Folder.Shared.Packages
 local ClientDependencies = script:WaitForChild("Dependencies")
 
 -- MODULES
 
 local Netgine = require(SharedPackages.Netgine)
-local Fader = require(ClientDependencies.Fader)
 local Promise = require(SharedPackages.Promise)
 local Controller = require(ClientDependencies.Controller)
 
@@ -43,6 +43,11 @@ local MainInterface = script.Parent
 local UserInformationProperty = ClientNetwork:RegisterRemoteProperty(Folder.Network.Properties.UserInformation)
 local UserInformation = UserInformationProperty:Get()
 local _warn = warn
+local NetworkEventCallbacks = {
+	Catchers = {},
+
+	Callbacks = {},
+}
 
 -- FUNCTIONS
 
@@ -50,12 +55,49 @@ function warn(...)
   _warn("[Rudimentary Client]:", ...)
 end
 
+local function handleNetworkEvent(networkEvent: string, ...)
+  local Data = {...}
+  local Responses = {}
+  local ResponsePromises = {}
+
+  if NetworkEventCallbacks.Catchers[networkEvent] then
+    for _, catacher in NetworkEventCallbacks.Catchers[networkEvent] do
+      task.spawn(catacher, table.unpack(Data))
+    end
+  end
+
+  if NetworkEventCallbacks.Callbacks[networkEvent] then
+    for _, callback in NetworkEventCallbacks.Callbacks[networkEvent] do
+      table.insert(ResponsePromises, Promise.new(function(resolve)
+        table.insert(Responses, callback(table.unpack(Data)))
+        resolve()
+      end))
+    end
+
+    Promise.all(ResponsePromises):await()
+  end
+
+  return if Responses[1] and Responses[2] then Responses else Responses[1]
+end
+
 -- CLIENT ENV
 
 local Environment = {}
 
+Environment.Interface = MainInterface
+Environment.MainRemoteEventWrapper = ClientNetwork:WrapRemoteEvent(Folder.Network.RemoteEvent)
+Environment.MainRemoteFunctionWrapper = ClientNetwork:WrapRemoteFunction(Folder.Network.RemoteFunction)
 Environment.API = {
+  CatchNetworkEvent = function(eventName: string, callback: () -> any)
+    if not NetworkEventCallbacks.Catchers[eventName] then
+      NetworkEventCallbacks.Catchers[eventName] = {}
+    end
 
+    table.insert(NetworkEventCallbacks.Catchers[eventName], callback)
+  end,
+  GetInterfaceModule = function(interfaceItemName: string)
+    return Themes[UserInformation.SystemSettings.Theme]:FindFirstChild(interfaceItemName) or Themes.Default:FindFirstChild(interfaceItemName)
+  end
 }
 
 -- INITIALIZE AND START CONTROLLERS
@@ -109,6 +151,16 @@ end)
 
 warn(`Started Rudimentary in {os.clock() - StartTime} second(s)`)
 
-UserInformationProperty:Observe(function(...)
-  print(...)
+UserInformationProperty:Observe(function(newInfo)
+  UserInformation = newInfo
+end)
+
+-- HANDLE REMOTES
+
+Environment.MainRemoteEventWrapper:Connect(function(eventName: string, ...: any)
+  task.spawn(handleNetworkEvent, eventName, ...)
+end)
+
+Environment.MainRemoteFunctionWrapper:Connect(function(eventName: string, ...: any)
+  return handleNetworkEvent(eventName, ...)
 end)
