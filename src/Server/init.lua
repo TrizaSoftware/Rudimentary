@@ -47,7 +47,9 @@ local Main = {
     [4] = "Lead Admin",
     [5] = "Game Creator",
     [math.huge] = "Admin Developer"
-  }
+  },
+  Prefix = ":",
+  SecondaryPrefix = "!"
 }
 
 local Settings = {
