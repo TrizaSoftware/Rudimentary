@@ -18,6 +18,7 @@
 
 -- SERVICES
 
+local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TestService = game:GetService("TestService")
@@ -25,8 +26,10 @@ local TestService = game:GetService("TestService")
 -- LOCATIONS
 
 local Folder = ReplicatedStorage:WaitForChild("Rudimentary")
-local Themes = Folder.Shared.Themes
-local SharedPackages = Folder.Shared.Packages
+local Shared = Folder.Shared
+local Themes = Shared.Themes
+local SharedPackages = Shared.Packages
+local MaterialIcons = require(Shared.MaterialIcons)
 local ClientDependencies = script:WaitForChild("Dependencies")
 
 -- MODULES
@@ -148,6 +151,16 @@ task.defer(function()
   script.Parent = Player.PlayerScripts
   warn("Re-parented Script")
 end)
+
+-- PRELOAD ICONS
+
+for _, icon in MaterialIcons do
+	task.spawn(function()
+		ContentProvider:PreloadAsync({ `rbxassetid://{icon}` })
+	end)
+end
+
+warn("Preloaded Icons")
 
 warn(`Started Rudimentary in {os.clock() - StartTime} second(s)`)
 

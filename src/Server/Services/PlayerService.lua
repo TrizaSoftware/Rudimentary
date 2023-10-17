@@ -1,13 +1,14 @@
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local Dependencies = script.Parent.Parent.Dependencies
+local Shared = script.Parent.Parent.Parent.Shared
 
 -- MODULES
 
 local Service = require(Dependencies.Service)
 local PseudoPlayer = require(Dependencies.PseudoPlayer)
-local Promise = require(script.Parent.Parent.Parent.Shared.Packages.Promise)
-local BetterSignal = require(script.Parent.Parent.Parent.Shared.Packages.BetterSignal)
+local Promise = require(Shared.Packages.Promise)
+local BetterSignal = require(Shared.Packages.BetterSignal)
 
 -- VARIABLES
 

@@ -32,6 +32,9 @@ function MessageController:DisplayMessage(message: Message)
     }
     local MessageFader = Fader.new(MessageUI)
     local NotificationSound = message.Sound and Dependencies.Sounds:FindFirstChild(message.Sound) or Dependencies.Sounds.Message
+    local TimeToClose = math.clamp(message.Text:len() * 0.7, 3, 20) -- In Seconds
+
+    print(TimeToClose)
 
     MessageFader:fadeOut()
     MessageFader.FadedOut:Wait()

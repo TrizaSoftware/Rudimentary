@@ -107,7 +107,6 @@ local Environment = {
 }
 
 local PersistantEnvironmentVariables = {
-  "SystemSettings",
   "CommandRegistry",
   "CommandAliasRegistry",
   "Network",
@@ -128,9 +127,22 @@ end
 local function buildEnvironment(forClient: boolean, userAdminLevel: number?)
   local ClonedEnv = TableHelper:CloneDeep(Environment)
 
-  for _, variableName in PersistantEnvironmentVariables do
-    ClonedEnv[variableName] = Environment[variableName]
-  end
+	if not forClient then
+		for _, variableName in PersistantEnvironmentVariables do
+			ClonedEnv[variableName] = Environment[variableName]
+		end
+
+    ClonedEnv.SystemSettings = table.clone(Settings)
+    setmetatable(ClonedEnv.SystemSettings, {
+      __index = function(table, index)
+        if table.find(SettingsTags[index], "Private") then
+          return nil
+        end
+
+        return Settings[index]
+      end
+    })
+	end
 
   for setting in ClonedEnv.SystemSettings do
     if SettingsTags[setting] then

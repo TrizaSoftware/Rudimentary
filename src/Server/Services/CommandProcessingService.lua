@@ -1,13 +1,13 @@
 local Players = game:GetService("Players")
 local Teams = game:GetService("Teams")
 local Dependencies = script.Parent.Parent.Dependencies
+local Shared = script.Parent.Parent.Parent.Shared
 
 -- MODULES
 
 local Service = require(Dependencies.Service)
-local Promise = require(script.Parent.Parent.Parent.Shared.Packages.Promise)
-local StringHelper = require(script.Parent.Parent.Parent.Shared.Helpers.StringHelper)
-local PlayerHelper = require(script.Parent.Parent.Parent.Shared.Helpers.PlayerHelper)
+local StringHelper = require(Shared.Helpers.StringHelper)
+local PlayerHelper = require(Shared.Helpers.PlayerHelper)
 
 -- SERVICES
 

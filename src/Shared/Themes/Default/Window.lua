@@ -8,7 +8,9 @@ local Value = Fusion.Value
 local IconButton = require(script.Parent.IconButton)
 export type WindowProps = {
   Title: string,
-  Resizable: boolean,
+  TitleTextXAlignment: Enum.TextXAlignment?,
+  TitleTextColor: Color3?,
+  Resizable: boolean?,
   Buttons: {
     IconButton.IconButtonProps
   },
@@ -47,11 +49,11 @@ local function Window(props: WindowProps)
           New "TextLabel" {
             Position = UDim2.new(0.032, 0,0.15, 0),
             TextScaled = true,
-            TextColor3 = Color3.fromRGB(173, 173, 173),
+            TextColor3 = props.TitleTextColor or Color3.fromRGB(173, 173, 173),
             Size = UDim2.new(0.526, 0,0.701, 0),
             Text = props.Title,
             BackgroundTransparency = 1,
-            TextXAlignment = Enum.TextXAlignment.Left,
+            TextXAlignment = props.TitleTextXAlignment or Enum.TextXAlignment.Left,
             FontFace = Font.fromEnum(Enum.Font.Gotham),
 
             [Children] = {
