@@ -1,17 +1,15 @@
 local Players = game:GetService("Players")
 local Teams = game:GetService("Teams")
-local Dependencies = script.Parent.Parent.Dependencies
 local Shared = script.Parent.Parent.Parent.Shared
 
 -- MODULES
 
-local Service = require(Dependencies.Service)
 local StringHelper = require(Shared.Helpers.StringHelper)
 local PlayerHelper = require(Shared.Helpers.PlayerHelper)
 
 -- SERVICES
 
-local PlayerService
+local PlayerService = require(script.Parent.PlayerService)
 
 -- VARIABLES
 
@@ -76,7 +74,9 @@ local CommandArgumentProcessors = {
 
 -- SERVICE
 
-local CommandProcessingService = Service.new("CommandProcessingService")
+local CommandProcessingService = {
+    Name = "CommandProcessingService"
+}
 
 function CommandProcessingService:ProcessCommand(player, message: string)
     local MainPrefix = Environment.SystemSettings.MainPrefix
@@ -189,8 +189,6 @@ function CommandProcessingService:Start()
 end
 
 function CommandProcessingService:Initialize(Env)
-    PlayerService = Service.get("PlayerService")
-
     Environment = Env
 end
 

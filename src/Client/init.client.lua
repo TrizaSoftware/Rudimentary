@@ -6,7 +6,7 @@
 /_/ |_|\__,_/\__,_/_/_/ /_/ /_/\___/_/ /_/\__/\__,_/_/   \__, /  
                                                         /____/                
                                                         
-	 Programmer(s): CodedJimmy
+	 Programmer(s): Jyrezo
 	 
 	 Rudimentary Client
 	  
@@ -117,6 +117,10 @@ for _, controller in script.Controllers:GetDescendants() do
 
   task.spawn(function()
     local ControllerInformation: typeof(Controller) = require(controller)
+
+    ControllerInformation.Started = false
+    ControllerInformation.Initialized = false
+  
 
     if ControllerInformation.Initialize then
       table.insert(ControllerInitializationPromises, Promise.new(function(resolve)

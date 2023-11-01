@@ -5,7 +5,6 @@ local Shared = script.Parent.Parent.Parent.Shared
 
 -- MODULES
 
-local Service = require(Dependencies.Service)
 local PseudoPlayer = require(Dependencies.PseudoPlayer)
 local Promise = require(Shared.Packages.Promise)
 local BetterSignal = require(Shared.Packages.BetterSignal)
@@ -16,7 +15,9 @@ local Environment
 
 -- SERVICE
 
-local PlayerService = Service.new("PlayerService")
+local PlayerService = {
+	Name = "PlayerService"
+}
 PlayerService.RegisteredPlayers = {}
 PlayerService.PlayerInitialized = BetterSignal.new()
 
