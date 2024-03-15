@@ -42,7 +42,7 @@ local Message = function(props: MessageProps)
 
                 [Children] = {
                     New "UITextSizeConstraint" {
-                        MaxTextSize = 25,
+                        MaxTextSize = 20,
                         MinTextSize = 1
                     },
                 }

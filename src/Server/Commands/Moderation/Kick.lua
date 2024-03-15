@@ -25,8 +25,6 @@ Command.Handler = function(environment, executingPlayer: Player, targets: {Playe
             target.Player:Kick(Reason)
         end
     end
-
-    environment.MainRemoteEventWrapper:Fire(executingPlayer.Player, "displayMessage", {Title = "Test", Text = "Test"})
 end
 
 return Command

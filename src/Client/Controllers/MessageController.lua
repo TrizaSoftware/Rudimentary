@@ -1,15 +1,17 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Dependencies = script.Parent.Parent.Dependencies
 
 -- MODULES
 
-local Controller = require(Dependencies.Controller)
 local Fader = require(Dependencies.Fader)
+local Fusion = require(ReplicatedStorage.Rudimentary.Shared.Packages.Fusion)
 
 -- VARIABLES
 
 local ENVIRONMENT
 local QUEUE = {}
 local DISPLAYING_MESSAGE = false
+local Value = Fusion.Value
 
 -- TYPES
 
@@ -28,15 +30,29 @@ local MessageController = {
 function MessageController:DisplayMessage(message: Message)
     DISPLAYING_MESSAGE = true
     local MessageModule = require(ENVIRONMENT.API.GetInterfaceModule("Message"))
+    local NotificationSound = message.Sound and Dependencies.Sounds:FindFirstChild(message.Sound) or Dependencies.Sounds.Message
+    local TimeToClose = math.clamp(math.round(message.Text:len() * 0.4), 5, 20) -- In Seconds
+    local CloseTimer = Value(TimeToClose)
     local MessageUI = MessageModule {
         Title = message.Title,
         Text = message.Text,
+        Countdown = CloseTimer,
         CloseCallback = function()
         end
     }
     local MessageFader = Fader.new(MessageUI)
-    local NotificationSound = message.Sound and Dependencies.Sounds:FindFirstChild(message.Sound) or Dependencies.Sounds.Message
-    local TimeToClose = math.clamp(message.Text:len() * 0.7, 3, 20) -- In Seconds
+
+    task.spawn(function()
+        for i = TimeToClose, 0, -1 do
+            CloseTimer:set(i)
+            task.wait(1)
+        end
+
+        MessageFader:fadeOut(1)
+        task.wait(1.1)
+        MessageFader:Destroy()
+        MessageUI:Destroy()
+    end)
 
     MessageFader:fadeOut()
     MessageFader.FadedOut:Wait()

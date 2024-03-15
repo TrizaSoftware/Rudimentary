@@ -36,7 +36,6 @@ local ClientDependencies = script:WaitForChild("Dependencies")
 
 local Netgine = require(SharedPackages.Netgine)
 local Promise = require(SharedPackages.Promise)
-local Controller = require(ClientDependencies.Controller)
 
 -- VARIABLES
 
@@ -116,7 +115,7 @@ for _, controller in script.Controllers:GetDescendants() do
   if not controller:IsA("ModuleScript") then continue end
 
   task.spawn(function()
-    local ControllerInformation: typeof(Controller) = require(controller)
+    local ControllerInformation = require(controller)
 
     ControllerInformation.Started = false
     ControllerInformation.Initialized = false

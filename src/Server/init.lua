@@ -30,7 +30,6 @@ local Dependencies = script.Dependencies
 local Promise = require(SharedPackages.Promise)
 local Netgine = require(SharedPackages.Netgine)
 local TableHelper = require(SharedHelpers.TableHelper)
-local Service = require(Dependencies.Service)
 
 -- VARIABLES
 
@@ -305,7 +304,7 @@ local function startAdmin(...)
     if not ServiceModule:IsA("ModuleScript") then continue end
 
     task.spawn(function()
-      local ServiceInformation: typeof(Service) = require(ServiceModule)
+      local ServiceInformation = require(ServiceModule)
 
       if ServiceInformation.Initialize then
         table.insert(ServiceInitializationPromises, Promise.new(function(resolve)

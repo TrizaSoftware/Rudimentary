@@ -7,7 +7,7 @@
 /_/    \__,_/\__,_/\___/_/     
                                
 
-	 Programmer(s): CodedJimmy
+	 Programmer(s): Jyrezo
 	 
 	 Fader v2.0
 	  
